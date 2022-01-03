@@ -22,7 +22,7 @@ Matrix::Matrix(const MatrixSize& size, const MatrixValType val) : Matrix(size) {
   CUDA_CALL(cudaDeviceSynchronize());
 }
 
-void Matrix::show() {
+void Matrix::show() const {
   MatrixValType* val = new MatrixValType[size.width * size.height];
   cudaMemcpy(val, this->gpuData, size.height * size.width * sizeof(MatrixValType), cudaMemcpyDeviceToHost);
 

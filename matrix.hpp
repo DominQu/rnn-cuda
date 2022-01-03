@@ -6,6 +6,7 @@
 #include "device_launch_parameters.h"
 
 #include <iostream>
+#include <cstddef>
 
 #define CUDA_CALL(x)							\
   {                                                                            \
@@ -15,11 +16,9 @@
                 << cudaGetErrorString(cuda_error__) << std::endl;              \
   }
 
-#include <cstddef>
-#include <tuple>
 
-
-
+// TODO: Multiplication of width * height is common
+//       it should be saved in some cool way
 struct MatrixSize {
   std::size_t height;
   std::size_t width;
@@ -41,7 +40,7 @@ public:
   Matrix(const MatrixSize& size, const MatrixValType val);
 
   /// Show matrix to the stdout (requires copying to CPU)
-  void show();
+  void show() const;
   
   Matrix multiply(const Matrix& other);
   Matrix multiply(const MatrixValType other);
