@@ -5,6 +5,18 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <exception>
+#include <string>
+
+class InvalidMatrixSize : std::exception {
+private:
+  std::string message;
+public:
+  InvalidMatrixSize(std::string message) : message(message) {}
+  virtual char const* what() const throw() {
+    return message.c_str();
+  }
+};
 
 class MatrixSize {
 public:
@@ -58,7 +70,9 @@ public:
 
   // These functions do not modify the object
   Matrix multiply(const Matrix &other) const;
-  Matrix multiply(const Matrix &other, Matrix& result) const;
+  void multiply(const Matrix &other, Matrix& result) const;
+
+  Matrix transpose() const;
   
   // These functions modify the object
   void multiply(const MatrixValType scalar);
@@ -66,6 +80,7 @@ public:
   void add(const MatrixValType other);
 
   inline const MatrixSize getSize() const { return size; }
+  MatrixValType* gpu_handle() { return gpuData; }
 private:
   MatrixSize size;
   MatrixValType *gpuData; // Pointer to global memory on GPU

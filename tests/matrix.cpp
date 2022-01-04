@@ -44,3 +44,10 @@ TEST_CASE("More multiplication") {
   CHECK(matEq(c.toCPU(), {{18, 18, 18}, {6, 6, 6}}));
 }
 
+TEST_CASE("Invalid multiplication") {
+  Matrix a = Matrix::fromCPU({{1, 2}, {3, 4}});
+  Matrix b = Matrix::fromCPU({{1, 2}, {3, 4}, {5, 6}});
+
+  CHECK_THROWS(a.multiply(b));
+}
+

@@ -22,5 +22,10 @@ int main() {
   Matrix c = a.multiply(b);
 
   c.show();
+
+  std::cout << "\n";
+
+  Matrix::fromCPU({{1, 2}, {3, 4}}).transpose().show();
+  
   return 0;
 }
