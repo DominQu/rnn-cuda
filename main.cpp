@@ -2,8 +2,21 @@
 #include "matrix.hpp"
 
 int main() {
-  Matrix m(MatrixSize(8, 32), 5);
-  m.show();
+  Matrix a(MatrixSize(4, 2), 1);
+  Matrix b(MatrixSize(2, 3), 1);
+
+  a.show();
+
+  std::cout << "\n";
+  
+  b.show();
+
+  std::cout << "\n";
+  
+  Matrix c = a.multiply(b);
+
+  c.show();
+  
   std::cout << "Hopefully runned kernel !" << std::endl;
   return 0;
 }

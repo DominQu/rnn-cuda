@@ -21,7 +21,6 @@ public:
   MatrixSize() : width(0), height(0), total(0) {}
   MatrixSize(std::size_t height, std::size_t width)
       : height(height), width(width), total(width * height){};
-
   
   std::size_t height;
   std::size_t width;
@@ -30,31 +29,40 @@ public:
 
 using MatrixValType = float;
 
-/* GPU */
-__global__ void init(MatrixValType *matrix, const MatrixSize size,
-                     const MatrixValType val);
-
 /* CPU */
 class Matrix {
 public:
+  /// Copy constructor
+  Matrix(const Matrix& copied);
+  /// Move constructor
+  Matrix(Matrix&& moved);
+  
   /// Initialize matrix of some size
   Matrix(const MatrixSize &size);
 
   /// Initialize matrix of some size, with values specified in the constructor
   Matrix(const MatrixSize &size, const MatrixValType val);
 
+  /// Create matrix of size like provided one
+  static Matrix like(const Matrix& other) {
+    return Matrix(other.getSize());
+  }
+  
   ~Matrix();
   
   /// Show matrix to the stdout (requires copying to CPU)
   void show() const;
 
-  Matrix multiply(const Matrix &other);
-  Matrix multiply(const MatrixValType other);
-  Matrix add(const Matrix &other);
-  Matrix add(const MatrixValType other);
+  // These functions do not modify the object
+  Matrix multiply(const Matrix &other) const;
+  Matrix multiply(const Matrix &other, Matrix& result) const;
+  
+  // These functions modify the object
+  void multiply(const MatrixValType scalar);
+  void add(const Matrix &other);
+  void add(const MatrixValType other);
 
-  inline MatrixSize getSize() const { return size; }
-
+  inline const MatrixSize getSize() const { return size; }
 private:
   MatrixSize size;
   MatrixValType *gpuData; // Pointer to global memory on GPU
