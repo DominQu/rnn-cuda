@@ -1,6 +1,6 @@
 #include "matrix.hpp"
-#include <cstddef>
-#include <iostream>
+#include "cuda.hpp"
+#include <vector>
 
 __global__ void init_gpu(MatrixValType *matrix, MatrixSize size,
                          const MatrixValType val) {
@@ -78,14 +78,38 @@ Matrix Matrix::multiply(const Matrix &other) const {
   return out;
 }
 
-void Matrix::show() const {
-  MatrixValType *val = new MatrixValType[size.total];
-  cudaMemcpy(val, this->gpuData, size.total * sizeof(MatrixValType),
-             cudaMemcpyDeviceToHost);
+CPUMatrix Matrix::toCPU() const {
+  CPUMatrix matrix;
+  matrix.reserve(size.height);
 
-  for (int i = 0; i < size.height; i++) {
-    for (int j = 0; j < size.width; j++) {
-      std::cout << " " << val[i * size.width + j] << " ";
+  for (int y = 0; y < size.height; y++) {
+    matrix.push_back(std::vector<MatrixValType>());
+    matrix[y].resize(size.width);
+
+    cudaMemcpy(&(*matrix[y].begin()), &gpuData[y * size.width], size.width * sizeof(MatrixValType), cudaMemcpyDeviceToHost);
+  }
+
+  return matrix;
+}
+
+Matrix Matrix::fromCPU(const CPUMatrix& input) {
+  Matrix m(MatrixSize(input.size(), input[0].size()));
+
+  cudaMalloc(&m.gpuData, m.size.total * sizeof(MatrixValType));
+  
+  for (int y = 0; y < input.size(); y++) {
+    cudaMemcpy(&m.gpuData[y * m.size.width], &(*input[y].begin()), m.size.width * sizeof(MatrixValType), cudaMemcpyHostToDevice);
+  }
+
+  return m;
+}
+
+void Matrix::show() const {
+  const auto matrix = this->toCPU();
+
+  for (int i = 0; i < matrix.size(); i++) {
+    for (int j = 0; j < matrix[0].size(); j++) {
+      std::cout << " " << matrix[i][j] << " ";
     }
     std::cout << "\n";
   }

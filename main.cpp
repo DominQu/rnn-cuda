@@ -2,21 +2,25 @@
 #include "matrix.hpp"
 
 int main() {
-  Matrix a(MatrixSize(4, 2), 1);
-  Matrix b(MatrixSize(2, 3), 1);
+  Matrix a = Matrix::fromCPU({{ 1, 3 }, { 4, 5 }});
+  Matrix b = Matrix::fromCPU({{ 1 }, { 1 }});
 
+  std::cout << "A:" << "\n";
+  
   a.show();
 
   std::cout << "\n";
+
+  std::cout << "B:" << "\n";
   
   b.show();
 
   std::cout << "\n";
+
+  std::cout << "A * B = C:" << "\n";
   
   Matrix c = a.multiply(b);
 
   c.show();
-  
-  std::cout << "Hopefully runned kernel !" << std::endl;
   return 0;
 }

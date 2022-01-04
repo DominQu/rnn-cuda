@@ -2,19 +2,9 @@
 // It is needed for all linear algebra operations
 #pragma once
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
 #include <cstddef>
 #include <iostream>
-
-#define CUDA_CALL(x)                                                           \
-  {                                                                            \
-    cudaError_t cuda_error__ = (x);                                            \
-    if (cuda_error__)                                                          \
-      std::cout << "CUDA error: " #x " returned "                              \
-                << cudaGetErrorString(cuda_error__) << std::endl;              \
-  }
+#include <vector>
 
 class MatrixSize {
 public:
@@ -28,6 +18,7 @@ public:
 };
 
 using MatrixValType = float;
+using CPUMatrix = std::vector<std::vector<MatrixValType>>;
 
 /* CPU */
 class Matrix {
@@ -47,8 +38,20 @@ public:
   static Matrix like(const Matrix& other) {
     return Matrix(other.getSize());
   }
-  
+
+  /// Create matrix of size like provided one (and fill it with some value)
+  static Matrix like(const Matrix& other, const MatrixValType val) {
+    return Matrix(other.getSize(), val);
+  }
+
+  /// Create matrix from cpu based data (std vectors)
+  static Matrix fromCPU(const CPUMatrix&);
+
+  /// Destructor
   ~Matrix();
+
+  /// Convert GPU based data to CPU based
+  CPUMatrix toCPU() const;
   
   /// Show matrix to the stdout (requires copying to CPU)
   void show() const;
