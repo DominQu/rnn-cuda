@@ -191,7 +191,7 @@ __global__ void multiply_gpu(const MatrixValType *in1, const MatrixSize in1Size,
   MatrixValType tmp = 0;
   
   for (int j = 0; j < in1Size.width; j++) {
-    tmp = in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
+    tmp += in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
   }
 
   out[y * outSize.width + x] = tmp;
