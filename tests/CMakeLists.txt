@@ -1,8 +1,8 @@
-add_executable(multiplication matrix.cpp)
+add_executable(matrix matrix.cpp)
 
-target_link_libraries(multiplication rnn-lib)
+target_link_libraries(matrix rnn-lib)
 
 enable_testing()
 
-add_test(multiplication multiplication)
-set_tests_properties(multiplication PROPERTIES FIXTURES_REQUIRED test_fixture)
+add_test(matrix matrix)
+set_tests_properties(matrix PROPERTIES FIXTURES_REQUIRED test_fixture)

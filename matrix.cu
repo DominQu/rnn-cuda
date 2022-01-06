@@ -1,8 +1,9 @@
 #include "cuda.hpp"
 #include "matrix.hpp"
 
-__global__
-void init_gpu(MatrixValType *matrix, MatrixSize size,
+/* Contructor and destructor */
+
+__global__ void init_gpu(MatrixValType *matrix, MatrixSize size,
                          const MatrixValType val) {
   const auto i = (blockIdx.x * blockDim.x + threadIdx.x);
 
@@ -12,123 +13,33 @@ void init_gpu(MatrixValType *matrix, MatrixSize size,
   matrix[i] = val;
 }
 
-__global__
-void multiply_gpu(MatrixValType *matrix, const MatrixSize size,
-                             const MatrixValType scalar) {
-  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if (i >= size.total)
-    return;
-
-  matrix[i] = matrix[i] * scalar;
-}
-
-__global__
-void multiply_gpu(MatrixValType *in1, const MatrixSize in1Size,
-                             MatrixValType *in2, const MatrixSize in2Size,
-                             MatrixValType *out, const MatrixSize outSize) {
-  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  std::size_t y = i / outSize.width;
-  std::size_t x = i - (y * outSize.width);
-
-  if (i >= outSize.total)
-    return;
-
-  out[y * outSize.height + x] = 0;
-
-  for (int j = 0; j < in1Size.width; j++) {
-    out[y * outSize.width + x] +=
-        in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
-  }
-}
-
-__global__
-void transpose_gpu(MatrixValType* in, const MatrixSize inSize, MatrixValType* out, const MatrixSize outSize) {
-  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  std::size_t y = i / outSize.width;
-  std::size_t x = i - (y * outSize.width);
-
-  if (i >= outSize.total)
-    return;
-
-  out[y * outSize.width + x] = in[x * inSize.width + y];
-}
-
 Matrix::~Matrix() { CUDA_CALL(cudaFree(this->gpuData)); }
 
 Matrix::Matrix(const MatrixSize &size) : size(size) {
-  CUDA_CALL(cudaMalloc(&this->gpuData, size.total * sizeof(MatrixValType)));
+  CUDA_CALL(cudaMalloc(&this->gpuData, this->size.total * sizeof(MatrixValType)));
 }
 
 Matrix::Matrix(const MatrixSize &size, const MatrixValType val) : Matrix(size) {
-  init_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, size, val);
+  init_gpu<<<this->groupSize(), this->threadSize()>>>(this->gpuData, this->size, val);
   CUDA_CALL(cudaGetLastError());
   CUDA_CALL(cudaDeviceSynchronize());
 }
 
 Matrix::Matrix(const Matrix &copied) : size(copied.size) {
   MatrixValType *copied_gpu_data;
+  
   cudaMalloc(&copied_gpu_data, copied.size.total * sizeof(MatrixValType));
   cudaMemcpy(copied_gpu_data, copied.gpuData,
-             size.total * sizeof(MatrixValType), cudaMemcpyDeviceToDevice);
+             this->size.total * sizeof(MatrixValType), cudaMemcpyDeviceToDevice);
+  
   this->gpuData = copied_gpu_data;
 }
 
-Matrix Matrix::transpose() const {
-  Matrix result(MatrixSize(size.width, size.height));
-
-  transpose_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, size, result.gpu_handle(), result.getSize());
-  CUDA_CALL(cudaGetLastError());
-  CUDA_CALL(cudaDeviceSynchronize());
-
-  return result;
-}
-
-void Matrix::multiply(const MatrixValType scalar) {
-  multiply_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, this->size, scalar);
-  CUDA_CALL(cudaGetLastError());
-  CUDA_CALL(cudaDeviceSynchronize());
-}
-
-Matrix Matrix::multiply(const Matrix &other) const {
-  if (size.width != other.size.height)
-    throw new InvalidMatrixSize(
-        "Current matrix width does not match other matrix height");
-
-  Matrix out(MatrixSize(size.height, other.size.width));
-
-  multiply_gpu<<<size.total / 32 + 1, 32>>>(gpuData, size, other.gpuData,
-                                            other.size, out.gpuData, out.size);
-  CUDA_CALL(cudaGetLastError());
-  CUDA_CALL(cudaDeviceSynchronize());
-
-  return out;
-}
-
-void Matrix::multiply(const Matrix &other, Matrix &out) const {
-  if (size.width != other.size.height)
-    throw new InvalidMatrixSize(
-        "Current matrix width does not match other matrix height");
-
-  if (size.height != out.size.height)
-    throw new InvalidMatrixSize(
-        "Current matrix height does not match result matrix height");
-
-  if (other.size.width != out.size.width)
-    throw new InvalidMatrixSize(
-        "Other matrix width does not match result matrix width");
-
-  multiply_gpu<<<size.total / 32 + 1, 32>>>(gpuData, size, other.gpuData,
-                                            other.size, out.gpuData, out.size);
-  CUDA_CALL(cudaGetLastError());
-  CUDA_CALL(cudaDeviceSynchronize());
-}
+/* Misc */
 
 CPUMatrix Matrix::toCPU() const {
   CPUMatrix matrix;
-  matrix.reserve(size.height);
+  matrix.reserve(this->size.height);
 
   for (int y = 0; y < size.height; y++) {
     matrix.push_back(std::vector<MatrixValType>());
@@ -154,6 +65,7 @@ Matrix Matrix::fromCPU(const CPUMatrix &input) {
   return m;
 }
 
+// TODO: This should be moved to CPUMatrix function
 void Matrix::show() const {
   const auto matrix = this->toCPU();
 
@@ -163,4 +75,169 @@ void Matrix::show() const {
     }
     std::cout << "\n";
   }
+}
+
+/* Adding */
+
+__global__ void add_gpu(MatrixValType *in, MatrixValType *other,
+                        MatrixValType *out, const MatrixSize size) {
+  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i >= size.total)
+    return;
+
+  out[i] = in[i] + other[i];
+}
+
+void Matrix::add(const Matrix &other, Matrix &result) const {
+  if (result.size.width != this->size.width ||
+      other.size.width != this->size.width)
+    throw new InvalidMatrixSize("Input Matrix width is not valid");
+
+  if (result.size.height != this->size.height ||
+      other.size.height != this->size.height)
+    throw new InvalidMatrixSize("Input Matrix height is not valid");
+
+  add_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, other.gpuData, result.gpuData,
+                                       this->size);
+
+  CUDA_CALL(cudaGetLastError());
+  CUDA_CALL(cudaDeviceSynchronize());
+}
+
+Matrix Matrix::add(const Matrix &other) const {
+  Matrix out(MatrixSize(this->size.height, this->size.width));
+  this->add(other, out);
+  return out;
+}
+
+__global__ void add_gpu(MatrixValType *in, MatrixValType scalar,
+                        MatrixValType *out, const MatrixSize size) {
+  const std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i >= size.total)
+    return;
+
+  out[i] = in[i] + scalar;
+}
+
+void Matrix::add(const MatrixValType scalar, Matrix &result) const {
+  if (result.size.width != this->size.width)
+    throw new InvalidMatrixSize("Result Matrix width is not valid");
+
+  if (result.size.height != this->size.height)
+    throw new InvalidMatrixSize("Result Matrix height is not valid");
+
+  add_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, scalar, result.gpuData,
+                                       this->size);
+
+  CUDA_CALL(cudaGetLastError());
+  CUDA_CALL(cudaDeviceSynchronize());
+}
+
+Matrix Matrix::add(const MatrixValType scalar) const {
+  Matrix out(MatrixSize(this->size.height, this->size.width));
+  this->add(scalar, out);
+  return out;
+}
+
+/* Multiplication */
+
+__global__ void multiply_gpu(MatrixValType *in, const MatrixValType scalar, MatrixValType* out, const MatrixSize size) {
+  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i >= size.total)
+    return;
+
+  out[i] = in[i] * scalar;
+}
+
+void Matrix::multiply(const MatrixValType scalar, Matrix &out) const {
+  if (this->size.height != out.size.height)
+    throw new InvalidMatrixSize(
+        "Current matrix height does not match result matrix height");
+
+  if (this->size.width != out.size.width)
+    throw new InvalidMatrixSize(
+        "Current matrix width does not match result matrix width");
+  
+  multiply_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, scalar, out.gpuData, this->size);
+  CUDA_CALL(cudaGetLastError());
+  CUDA_CALL(cudaDeviceSynchronize());
+}
+
+Matrix Matrix::multiply(const MatrixValType scalar) const {
+  Matrix out(this->size);
+  this->multiply(scalar, out);
+  return out;
+}
+
+__global__ void multiply_gpu(MatrixValType *in1, const MatrixSize in1Size,
+                             MatrixValType *in2, const MatrixSize in2Size,
+                             MatrixValType *out, const MatrixSize outSize) {
+  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  std::size_t y = i / outSize.width;
+  std::size_t x = i - (y * outSize.width);
+
+  if (i >= outSize.total)
+    return;
+
+  out[y * outSize.height + x] = 0;
+
+  for (int j = 0; j < in1Size.width; j++) {
+    out[y * outSize.width + x] +=
+        in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
+  }
+}
+
+void Matrix::multiply(const Matrix &other, Matrix &out) const {
+  if (this->size.width != other.size.height)
+    throw new InvalidMatrixSize(
+        "Current matrix width does not match other matrix height");
+
+  if (this->size.height != out.size.height)
+    throw new InvalidMatrixSize(
+        "Current matrix height does not match result matrix height");
+
+  if (other.size.width != out.size.width)
+    throw new InvalidMatrixSize(
+        "Other matrix width does not match result matrix width");
+
+  multiply_gpu<<<size.total / 32 + 1, 32>>>(this->gpuData, this->size, other.gpuData,
+                                            other.size, out.gpuData, out.size);
+  CUDA_CALL(cudaGetLastError());
+  CUDA_CALL(cudaDeviceSynchronize());
+}
+
+Matrix Matrix::multiply(const Matrix &other) const {
+  Matrix out(MatrixSize(this->size.height, other.size.width));
+  this->multiply(other, out);
+  return out;
+}
+
+/* Transposition */
+
+__global__ void transpose_gpu(MatrixValType *in, const MatrixSize inSize,
+                              MatrixValType *out, const MatrixSize outSize) {
+  std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  std::size_t y = i / outSize.width;
+  std::size_t x = i - (y * outSize.width);
+
+  if (i >= outSize.total)
+    return;
+
+  out[y * outSize.width + x] = in[x * inSize.width + y];
+}
+
+Matrix Matrix::transpose() const {
+  Matrix result(MatrixSize(this->size.width, this->size.height));
+
+  transpose_gpu<<<size.total / 32 + 1, 32>>>(
+      this->gpuData, this->size, result.gpu_handle(), result.getSize());
+  CUDA_CALL(cudaGetLastError());
+  CUDA_CALL(cudaDeviceSynchronize());
+
+  return result;
 }

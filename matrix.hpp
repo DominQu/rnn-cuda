@@ -3,19 +3,18 @@
 #pragma once
 
 #include <cstddef>
-#include <iostream>
-#include <vector>
 #include <exception>
+#include <iostream>
 #include <string>
+#include <vector>
 
 class InvalidMatrixSize : std::exception {
 private:
   std::string message;
+
 public:
   InvalidMatrixSize(std::string message) : message(message) {}
-  virtual char const* what() const throw() {
-    return message.c_str();
-  }
+  virtual char const *what() const throw() { return message.c_str(); }
 };
 
 class MatrixSize {
@@ -23,7 +22,7 @@ public:
   MatrixSize() : width(0), height(0), total(0) {}
   MatrixSize(std::size_t height, std::size_t width)
       : height(height), width(width), total(width * height){};
-  
+
   std::size_t height;
   std::size_t width;
   std::size_t total;
@@ -36,10 +35,10 @@ using CPUMatrix = std::vector<std::vector<MatrixValType>>;
 class Matrix {
 public:
   /// Copy constructor
-  Matrix(const Matrix& copied);
+  Matrix(const Matrix &copied);
   /// Move constructor
-  Matrix(Matrix&& moved);
-  
+  Matrix(Matrix &&moved);
+
   /// Initialize matrix of some size
   Matrix(const MatrixSize &size);
 
@@ -47,41 +46,45 @@ public:
   Matrix(const MatrixSize &size, const MatrixValType val);
 
   /// Create matrix of size like provided one
-  static Matrix like(const Matrix& other) {
-    return Matrix(other.getSize());
-  }
+  static Matrix like(const Matrix &other) { return Matrix(other.getSize()); }
 
   /// Create matrix of size like provided one (and fill it with some value)
-  static Matrix like(const Matrix& other, const MatrixValType val) {
+  static Matrix like(const Matrix &other, const MatrixValType val) {
     return Matrix(other.getSize(), val);
   }
 
   /// Create matrix from cpu based data (std vectors)
-  static Matrix fromCPU(const CPUMatrix&);
+  static Matrix fromCPU(const CPUMatrix &);
 
   /// Destructor
   ~Matrix();
 
   /// Convert GPU based data to CPU based
   CPUMatrix toCPU() const;
-  
+
   /// Show matrix to the stdout (requires copying to CPU)
   void show() const;
 
   // These functions do not modify the object
+  Matrix multiply(const MatrixValType scalar) const;
+  void multiply(const MatrixValType scalar, Matrix &result) const;
   Matrix multiply(const Matrix &other) const;
-  void multiply(const Matrix &other, Matrix& result) const;
-
-  Matrix transpose() const;
+  void multiply(const Matrix &other, Matrix &result) const;
   
-  // These functions modify the object
-  void multiply(const MatrixValType scalar);
-  void add(const Matrix &other);
-  void add(const MatrixValType other);
+  Matrix add(const Matrix &other) const;
+  void add(const Matrix &other, Matrix &result) const;
+  Matrix add(const MatrixValType scalar) const;
+  void add(const MatrixValType scalar, Matrix &result) const;
+  
+  Matrix transpose() const;
 
   inline const MatrixSize getSize() const { return size; }
-  MatrixValType* gpu_handle() { return gpuData; }
+  MatrixValType *gpu_handle() { return gpuData; }
+
 private:
   MatrixSize size;
   MatrixValType *gpuData; // Pointer to global memory on GPU
+
+  std::size_t threadSize() { return 64; }
+  std::size_t groupSize()  { return size.total / threadSize() + 1; }
 };
