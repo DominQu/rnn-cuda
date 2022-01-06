@@ -188,12 +188,13 @@ __global__ void multiply_gpu(const MatrixValType *in1, const MatrixSize in1Size,
   if (i >= outSize.total)
     return;
 
-  out[y * outSize.height + x] = 0;
-
+  MatrixValType tmp = 0;
+  
   for (int j = 0; j < in1Size.width; j++) {
-    out[y * outSize.width + x] +=
-        in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
+    tmp = in1[y * in1Size.width + j] * in2[j * in2Size.width + x];
   }
+
+  out[y * outSize.width + x] = tmp;
 }
 
 void Matrix::multiply(const Matrix &other, Matrix &out) const {
