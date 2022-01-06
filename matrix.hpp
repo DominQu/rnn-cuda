@@ -75,16 +75,21 @@ public:
   void add(const Matrix &other, Matrix &result) const;
   Matrix add(const MatrixValType scalar) const;
   void add(const MatrixValType scalar, Matrix &result) const;
-  
+
+  /// Return transposed matrix
   Matrix transpose() const;
+  /// Transpose matrix into passed result Matrix
+  void transpose(Matrix& result) const;
 
+  // TODO: Use function below instead of accesing data directly
   inline const MatrixSize getSize() const { return size; }
-  MatrixValType *gpu_handle() { return gpuData; }
 
+  inline MatrixValType *gpuHandle() { return gpuData; }
+  inline const MatrixValType *gpuHandle() const { return gpuData; }
 private:
   MatrixSize size;
   MatrixValType *gpuData; // Pointer to global memory on GPU
 
-  std::size_t threadSize() { return 64; }
-  std::size_t groupSize()  { return size.total / threadSize() + 1; }
+  inline std::size_t threadSize() { return 64; }
+  inline std::size_t groupSize()  { return size.total / threadSize() + 1; }
 };
