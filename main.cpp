@@ -1,5 +1,5 @@
 #include <iostream>
-#include "matrix.hpp"
+#include "linalg/matrix.hpp"
 
 int main() {
   Matrix a = Matrix::fromCPU({{ 1, 3 }, { 4, 5 }});

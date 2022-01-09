@@ -1,6 +1,6 @@
 add_executable(matrix matrix.cpp)
 
-target_link_libraries(matrix rnn-lib)
+target_link_libraries(matrix rnn-linalg)
 
 enable_testing()
 

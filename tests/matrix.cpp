@@ -1,4 +1,4 @@
-#include "matrix.hpp"
+#include "linalg/matrix.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
