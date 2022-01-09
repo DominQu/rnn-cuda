@@ -3,3 +3,4 @@ build/
 .log/
 compile_commands.json
 #*#
+flake.lock
