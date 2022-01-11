@@ -1,16 +1,16 @@
 #pragma once
 
 #include "layer.hpp"
-#include "matrix.hpp"
+#include "linalg/matrix.hpp"
 
-class LstmLayer {
+class LstmLayer : public Layer{
 private:
   int state_dim;
   int timesteps;
   Matrix c; /// Carry matrix
-  Matrix h; /// State matrix
+  Matrix h; /// State matrix which is the output of the cell
 public:
-  LstmLayer(int state_dim);
+  LstmLayer(int state_dim, int timesteps);
   ~LstmLayer();
 
   Matrix& forward(Matrix& input);

@@ -16,12 +16,14 @@ __global__ void dsigmoidlayerforward(MatrixValType *input, MatrixValType *output
 }
 
 Matrix& SigmoidLayer::forward(Matrix& input) {
-  this->input = input;
-  this->output = Matrix(input.getSize());
-  
-  dsigmoidlayerforward<<<input.groupSize(), input.threadSize()>>>(input.gpuData,
-                                                                  output.gpuData,
-                                                                  input.size);
+  //TODO: fix return because it is a reference to local variable
+  Matrix output(input.getSize());
+
+  dim3 num_threads = 32;
+  dim3 num_blocks = num_threads.x / input.getSize().total + 1;
+  dsigmoidlayerforward<<<num_blocks, num_threads>>>(input.gpuHandle(),
+                                                    output.gpuHandle(),
+                                                    input.getSize());
   CUDA_CALL(cudaGetLastError());
 
   return output;

@@ -1,12 +1,9 @@
 #pragma once
 
 #include "layer.hpp"
-#include "matrix.hpp"
+#include "linalg/matrix.hpp"
 
 class SigmoidLayer : public Layer {
-private:
-  Matrix input;
-  Matrix output;
 public:
   SigmoidLayer();
   ~SigmoidLayer();

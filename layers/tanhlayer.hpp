@@ -1,7 +1,7 @@
 #pragma once
 
 #include "layer.hpp"
-#include "matrix.hpp"
+#include "linalg/matrix.hpp"
 
 class TanhLayer : public Layer {
 public:

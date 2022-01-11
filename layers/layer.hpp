@@ -1,5 +1,7 @@
 #pragma once
 
+#include "linalg/matrix.hpp"
+
 /// Abstract class for neural network layers
 class Layer {
 public:
