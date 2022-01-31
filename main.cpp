@@ -1,19 +1,21 @@
 #include <iostream>
-#include "linalg/matrix.hpp"
+#include "linalg/GPUMatrix.hpp"
+
+using Matrix = GPUMatrix;
 
 int main() {
-  Matrix a = Matrix::fromCPU({{ 1, 3 }, { 4, 5 }});
-  Matrix b = Matrix::fromCPU({{ 1 }, { 1 }});
+  Matrix a = Matrix::from({{ 1, 3 }, { 4, 5 }});
+  Matrix b = Matrix::from({{ 1 }, { 1 }});
 
   std::cout << "A:" << "\n";
   
-  a.show();
+  a.show(std::cout);
 
   std::cout << "\n";
 
   std::cout << "B:" << "\n";
   
-  b.show();
+  b.show(std::cout);
 
   std::cout << "\n";
 
@@ -21,11 +23,11 @@ int main() {
   
   Matrix c = a.multiply(b);
 
-  c.show();
+  c.show(std::cout);
 
   std::cout << "\n";
 
-  Matrix::fromCPU({{1, 2}, {3, 4}}).transpose().show();
+  Matrix::from({{1, 2}, {3, 4}}).transpose().show(std::cout);
   
   return 0;
 }

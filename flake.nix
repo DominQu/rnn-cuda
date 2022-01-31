@@ -19,43 +19,21 @@
             pkgs.stdenv.mkDerivation {
               name = "cuda-env-shell";
               buildInputs = with pkgs; [
-                git
-                gitRepo
-                gnupg
-                autoconf
-                curl
-                procps
-                gnumake
-                utillinux
-                m4
-                gperf
-                unzip
                 cudaPackages.cudatoolkit_11_0
                 linuxPackages.nvidia_x11
-                libGLU
-                libGL
-                xorg.libXi
-                xorg.libXmu
-                freeglut
-                xorg.libXext
-                xorg.libX11
-                xorg.libXv
-                xorg.libXrandr
-                zlib
                 ncurses5
-                stdenv.cc
-                binutils
-                # These libraries are requires for OpenGL
-                xorg.libX11.dev
-                xlibs.xorgproto
-                freeglut
-                libGLU.dev
-                libGL.dev
-                libGL_driver
-                # Nvidia Nsight
-                jdk8
-                # Cmake
-                cmake
+                
+                ## These libraries are requires for OpenGL
+                # xorg.libX11.dev
+                # xlibs.xorgproto
+                # freeglut
+                # libGLU.dev
+                # libGL.dev
+                # libGL_driver
+                ## Nvidia Nsight
+                # jdk8
+                ## Cmake
+                # cmake
               ];
               shellHook = ''
                 export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit_11_0}

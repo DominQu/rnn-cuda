@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Cuda specific
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_50,code=sm_50 -gencode=arch=compute_70,code=sm_70 --expt-relaxed-constexpr -Wno-deprecated-gpu-targets")
-#set(CMAKE_CUDA_ARCHITECTURES "35;37;50;52;60;61;70;75;80")
+set(CMAKE_CUDA_ARCHITECTURES OFF)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 
 # Common header namespace for all libraries (ex. linalg/matrix.hpp)

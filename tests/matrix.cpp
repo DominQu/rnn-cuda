@@ -1,92 +1,73 @@
-#include "linalg/matrix.hpp"
+#include "linalg/CPUMatrix.hpp"
+#include "linalg/GPUMatrix.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-bool matEq(const CPUMatrix &m1, const CPUMatrix &m2) {
-  if (m1.size() != m2.size())
-    return false;
-  if (m1[0].size() != m2[0].size())
-    return false;
-
-  for (int y = 0; y < m1.size(); y++) {
-    for (int x = 0; x < m1[0].size(); x++) {
-      if (m1[y][x] != m2[y][x])
-        return false;
-    }
-  }
-
-  return true;
-}
-
-bool matEq(const Matrix &m1, const CPUMatrix &m2) {
-  return matEq(m1.toCPU(), m2);
-}
-
-bool matEq(const CPUMatrix &m1, const Matrix &m2) {
-  return matEq(m1, m2.toCPU());
-}
-
-bool matEq(const Matrix &m1, const Matrix &m2) {
-  return matEq(m1.toCPU(), m2.toCPU());
+TEST_CASE("Constructors") {
+  // TODO
 }
 
 TEST_CASE("CPU <-> GPU") {
-  CPUMatrix a = {{3, 6}, {1, 2}};
-  Matrix b = Matrix::fromCPU(a);
+  const auto a = CPUMatrix::from({{3, 6}, {1, 2}});
+  const auto b = GPUMatrix::from(a);
 
-  CHECK(matEq(a, b));
+  CHECK(a == b.toCPU());
 }
+
 
 TEST_CASE("Adding scalar to the Matrix") {
-  const auto case1 = Matrix(MatrixSize(8, 8), 1).add(5);
+  const auto case1 = GPUMatrix(MatrixSize(8, 8), 1).add(5);
 
-  CHECK(matEq(case1, Matrix(MatrixSize(8, 8), 6)));
+  CHECK(case1.toCPU() == CPUMatrix(MatrixSize(8, 8), 6));
 }
+
 
 TEST_CASE("Adding two Matrices") {
   const auto case1 =
-      Matrix::fromCPU({{1, 2}, {3, 4}}).add(Matrix::fromCPU({{3, 2}, {1, 0}}));
-  CHECK(matEq(case1, {{4, 4}, {4, 4}}));
+    GPUMatrix::from({{1, 2}, {3, 4}}).add(GPUMatrix::from({{3, 2}, {1, 0}}));
+  CHECK(case1.toCPU() == CPUMatrix::from({{4, 4}, {4, 4}}));
 
-  CHECK_THROWS(Matrix::fromCPU({{1, 2}}).add(Matrix::fromCPU({{1}, {2}})));
+  CHECK_THROWS(GPUMatrix::from({{1, 2}}).add(GPUMatrix::from({{1}, {2}})));
 
   const auto case2 =
-      Matrix(MatrixSize(2, 2), 1).add(Matrix::fromCPU({{1, 8}, {8, 1}}));
+      GPUMatrix(MatrixSize(2, 2), 1).add(GPUMatrix::from({{1, 8}, {8, 1}}));
 
-  CHECK(matEq(case2, {{2, 9}, {9, 2}}));
+  CHECK(case2.toCPU() == CPUMatrix::from({{2, 9}, {9, 2}}));
 }
 
+
 TEST_CASE("Simple Multiplication") {
-  Matrix a = Matrix::fromCPU({{1, 3}, {4, 5}});
-  Matrix b = Matrix::fromCPU({{1}, {1}});
+  auto a = GPUMatrix::from({{1, 3}, {4, 5}});
+  auto b = GPUMatrix::from({{1}, {1}});
 
-  Matrix c = a.multiply(b);
+  GPUMatrix c = a.multiply(b);
 
-  CHECK(matEq(c, {{4}, {9}}));
+  CHECK(c.toCPU() == CPUMatrix::from({{4}, {9}}));
 
-  Matrix d = c.multiply(10);
+  GPUMatrix d = c.multiply(10);
 
-  CHECK(matEq(d, {{40}, {90}}));
+  CHECK(d.toCPU() == CPUMatrix::from({{40}, {90}}));
 }
 
 TEST_CASE("More multiplication") {
-  Matrix a = Matrix::fromCPU({{6, 6, 6}, {2, 2, 2}});
-  Matrix b = Matrix::fromCPU({{1, 1, 1}, {1, 1, 1}, {1, 1, 1}});
+  GPUMatrix a = GPUMatrix::from({{6, 6, 6}, {2, 2, 2}});
+  GPUMatrix b = GPUMatrix::from({{1, 1, 1}, {1, 1, 1}, {1, 1, 1}});
 
-  Matrix c = a.multiply(b);
+  GPUMatrix c = a.multiply(b);
 
-  CHECK(matEq(c, {{18, 18, 18}, {6, 6, 6}}));
+  CHECK(c.toCPU() == CPUMatrix::from({{18, 18, 18}, {6, 6, 6}}));
 }
 
 TEST_CASE("Invalid multiplication") {
-  Matrix a = Matrix::fromCPU({{1, 2}, {3, 4}});
-  Matrix b = Matrix::fromCPU({{1, 2}, {3, 4}, {5, 6}});
+  auto a = GPUMatrix::from({{1, 2}, {3, 4}});
+  auto b = GPUMatrix::from({{1, 2}, {3, 4}, {5, 6}});
 
   CHECK_THROWS(a.multiply(b));
 }
 
 TEST_CASE("Transposition") {
-  CHECK(matEq(Matrix::fromCPU({{1, 2}}).transpose(), {{1}, {2}}));
-  CHECK(matEq(Matrix::fromCPU({{1, 2}, {3, 4}}).transpose(), {{1, 3}, {2, 4}}));
+  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().transpose().toCPU() == CPUMatrix::from({{1, 2}, {3, 4}}));
+  CHECK(GPUMatrix::from({{1, 2}}).transpose().toCPU() == CPUMatrix::from({{1}, {2}}));
+  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().toCPU() == CPUMatrix::from({{1, 3}, {2, 4}}));
 }
