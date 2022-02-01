@@ -1,8 +1,8 @@
-add_executable(matrix matrix.cpp)
+add_executable(test test.cpp matrix.cpp)
 
-target_link_libraries(matrix rnn-linalg rnn-layers)
+target_link_libraries(test rnn-linalg rnn-layers)
 
 enable_testing()
 
-add_test(matrix matrix)
-set_tests_properties(matrix PROPERTIES FIXTURES_REQUIRED test_fixture)
+add_test(test test)
+set_tests_properties(test PROPERTIES FIXTURES_REQUIRED test_fixture)
