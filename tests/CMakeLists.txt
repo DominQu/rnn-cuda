@@ -1,4 +1,4 @@
-add_executable(test test.cpp matrix.cpp)
+add_executable(test test.cpp matrix.cpp layers.cpp)
 
 target_link_libraries(test rnn-linalg rnn-layers)
 

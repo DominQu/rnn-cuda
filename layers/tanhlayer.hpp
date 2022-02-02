@@ -3,10 +3,10 @@
 #include "layer.hpp"
 #include "linalg/matrix.hpp"
 
-class TanhLayer : public Layer {
+class TanhLayer {
 public:
-  TanhLayer();
-  ~TanhLayer();
+  TanhLayer() {};
+  ~TanhLayer() {};
 
   Matrix& forward(Matrix& input);
   void backward();

@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Cuda specific
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_50,code=sm_50 -gencode=arch=compute_70,code=sm_70 --expt-relaxed-constexpr -Wno-deprecated-gpu-targets")
+find_package(CUDA REQUIRED)
+include_directories("${CUDA_INCLUDE_DIRS}")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_50,code=sm_50 -gencode=arch=compute_80,code=sm_80 --expt-relaxed-constexpr -Wno-deprecated-gpu-targets")
 set(CMAKE_CUDA_ARCHITECTURES OFF)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 
