@@ -44,6 +44,7 @@ public:
   
   /// Accessor
   MatrixValType& at(const std::size_t y, const std::size_t x);
+  const MatrixValType at(const std::size_t y, const std::size_t x) const;
 
   /// Comparing matricies
   bool operator==(const CPUMatrix& other) const;

@@ -1,6 +1,6 @@
-add_executable(test test.cpp matrix.cpp layers.cpp)
+add_executable(test test.cpp matrix.cpp layers.cpp loader.cpp)
 
-target_link_libraries(test rnn-linalg rnn-layers)
+target_link_libraries(test rnn-linalg rnn-layers rnn-loader)
 
 enable_testing()
 

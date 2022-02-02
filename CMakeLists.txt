@@ -17,6 +17,7 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 include_directories("./.")
 
 add_subdirectory("./linalg")
+add_subdirectory("./loader")
 add_subdirectory("./layers")
 add_subdirectory("./tests")
 

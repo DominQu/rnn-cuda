@@ -61,6 +61,11 @@ MatrixValType& CPUMatrix::at(const std::size_t y, const std::size_t x) {
   return this->cpuData[this->coordsFrom(y, x)];
 }
 
+const MatrixValType CPUMatrix::at(const std::size_t y, const std::size_t x) const {
+  return this->cpuData[this->coordsFrom(y, x)];
+}
+
+
 bool CPUMatrix::operator==(const CPUMatrix& other) const {
   if (this->getSize() != other.getSize()) return false;
 
