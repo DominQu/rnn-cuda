@@ -1,6 +1,3 @@
-add_library(rnn-layers linearlayer.cu 
-                       sigmoidlayer.cu
-                       tanhlayer.cu
-                       lstmlayer.cu)
+add_library(rnn-layers lstmlayer.cu)
 
 target_include_directories(rnn-layers PRIVATE ${SOURCE_DIR})
