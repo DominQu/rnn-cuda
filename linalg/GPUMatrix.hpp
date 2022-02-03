@@ -58,6 +58,9 @@ public:
   GPUMatrix multiply(const GPUMatrix &other) const;
   void multiply(const GPUMatrix &other, GPUMatrix &result) const;
 
+  GPUMatrix multiplyelementwise(const GPUMatrix &other) const;
+  void multiplyelementwise(const GPUMatrix &other, GPUMatrix &result) const;
+
   GPUMatrix add(const GPUMatrix &other) const;
   void add(const GPUMatrix &other, GPUMatrix &result) const;
   GPUMatrix add(const MatrixValType scalar) const;

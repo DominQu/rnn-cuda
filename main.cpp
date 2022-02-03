@@ -28,6 +28,14 @@ int main() {
   std::cout << "\n";
 
   Matrix::from({{1, 2}, {3, 4}}).transpose().show(std::cout);
+
+  Matrix e = Matrix::from({{ 2, 2 }, { 2, 2 }});
+
+  Matrix d = a.multiplyelementwise(e);
+  
+  d.show(std::cout);
+
+  std::cout << "\n";
   
   return 0;
 }

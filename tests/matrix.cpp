@@ -70,3 +70,12 @@ TEST_CASE("Transposition") {
   CHECK(GPUMatrix::from({{1, 2}}).transpose().toCPU() == CPUMatrix::from({{1}, {2}}));
   CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().toCPU() == CPUMatrix::from({{1, 3}, {2, 4}}));
 }
+
+TEST_CASE("Elementwise multiplication") {
+  GPUMatrix a = GPUMatrix::from({{3,4}, { 3, 4}});
+  GPUMatrix b = GPUMatrix::from({{2,2}, { 2, 2}});
+
+  GPUMatrix c = a.multiplyelementwise(b);
+
+  CHECK(c.toCPU() == CPUMatrix::from({{6,8}, { 6, 8}}));
+}

@@ -325,3 +325,39 @@ GPUMatrix GPUMatrix::transpose() const {
   this->transpose(result);
   return result;
 }
+
+/* Elementwise multiplication */
+
+__global__ void multiplyelementwise_gpu(const MatrixValType *in1, const MatrixSize in1Size,
+                                        const MatrixValType *in2, const MatrixSize in2Size,
+                                        MatrixValType *out, const MatrixSize outSize) {
+  for (auto mult = 1;; mult++) {
+    const auto i = ((blockIdx.x + 1) * mult - 1) * blockDim.x + threadIdx.x;
+
+    if(i >= outSize.total) {
+      return;
+    }
+
+    out[i] = in1[i] * in2[i];
+  }
+}
+
+void GPUMatrix::multiplyelementwise(const GPUMatrix &other, GPUMatrix &result) const{
+  if (this->getSize().height != other.getSize().height ||
+      this->getSize().width != other.getSize().width)
+    throw new InvalidMatrixSize("Current matrix dimensions does not match other matrix dimensions");
+  if (this->getSize().height != result.getSize().height ||
+      this->getSize().width != result.getSize().width)
+    throw new InvalidMatrixSize("Current matrix dimensions does not match result matrix dimensions");
+  
+  this->syncGPU();
+  multiplyelementwise_gpu<<<SMs, ThreadsPerSM>>>(this->gpuHandle(), this->getSize(),
+                                                 other.gpuHandle(), other.getSize(),
+                                                 result.gpuData, result.size);
+}
+
+GPUMatrix GPUMatrix::multiplyelementwise(const GPUMatrix& other) const {
+  GPUMatrix result(MatrixSize(this->size.height, this->size.width));
+  this->multiplyelementwise(other, result);
+  return result;
+}
