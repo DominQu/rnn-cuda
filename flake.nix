@@ -22,6 +22,7 @@
                 cudaPackages.cudatoolkit_11_0
                 linuxPackages.nvidia_x11
                 ncurses5
+                cmake
                 
                 ## These libraries are requires for OpenGL
                 # xorg.libX11.dev
@@ -32,8 +33,6 @@
                 # libGL_driver
                 ## Nvidia Nsight
                 # jdk8
-                ## Cmake
-                # cmake
               ];
               shellHook = ''
                 export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit_11_0}

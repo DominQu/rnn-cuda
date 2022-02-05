@@ -21,10 +21,14 @@ add_subdirectory("./loader")
 add_subdirectory("./layers")
 add_subdirectory("./tests")
 
+# Copy dataset
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(rnn main.cpp)
 
 target_include_directories(rnn PUBLIC ${PROJECT_SOURCE_DIR})
-target_link_libraries(rnn rnn-linalg rnn-layers)
+target_link_libraries(rnn rnn-linalg rnn-layers rnn-loader)
 
 add_compile_options(rnn PUBLIC -g -02)
 
