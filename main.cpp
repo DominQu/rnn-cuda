@@ -1,5 +1,6 @@
 #include <iostream>
 #include "linalg/GPUMatrix.hpp"
+#include "layers/lstmlayer.hpp"
 
 using Matrix = GPUMatrix;
 
@@ -27,15 +28,32 @@ int main() {
 
   std::cout << "\n";
 
-  Matrix::from({{1, 2}, {3, 4}}).transpose().show(std::cout);
+  std::cout << "E" << std::endl;
 
   Matrix e = Matrix::from({{ 2, 2 }, { 2, 2 }});
+  
+  e.show(std::cout);
+
+  std::cout << "\n";
+
+  std::cout << "A * E (elementwise) = D:" << std::endl;
 
   Matrix d = a.multiplyelementwise(e);
   
   d.show(std::cout);
 
   std::cout << "\n";
-  
+
+  std::cout << "LSTM forward pass:" << std::endl;
+
+  LstmLayer layer(64, 512, 2, 0, 1);
+  std::vector<CPUMatrix> batch;
+  batch.emplace_back(MatrixSize(64,1), 1);
+  batch.emplace_back(MatrixSize(64,1), 1);
+
+  GPUMatrix output = layer.forward(batch);
+  // output.show(std::cout);
+  std::cout << output.getSize().height << std::endl;
+
   return 0;
 }
