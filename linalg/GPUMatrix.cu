@@ -63,6 +63,12 @@ GPUMatrix::GPUMatrix(const GPUMatrix &copied) : GPUMatrix(copied.size) {
              cudaMemcpyDeviceToDevice);
 }
 
+GPUMatrix::GPUMatrix(GPUMatrix&& moved) {
+  this->gpuData = moved.gpuData;
+  this->size = moved.size;
+  moved.gpuData = nullptr;
+}
+
 /* Misc */
 
 CPUMatrix GPUMatrix::toCPU() const {
