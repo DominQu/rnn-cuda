@@ -18,8 +18,6 @@ TEST_CASE("Onehot") {
   CHECK_NE(m1, m3);
   CHECK_NE(m2, m3);
 
-  m4.show(std::cout);
-  
   CHECK_EQ('d', oh.decode(oh.encode('d')));
   CHECK_EQ('s', oh.decode(oh.encode('s')));
   CHECK_EQ('b', oh.decode(oh.encode('b')));
