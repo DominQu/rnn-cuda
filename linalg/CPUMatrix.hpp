@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -54,6 +55,12 @@ public:
 
   /// Show matrix to the stdout (requires copying to CPU)
   void show(std::ostream&) const;
+
+  // Serialization and deserialization
+  /// Serialize object into file
+  void serialize(std::ostream&) const;
+  /// Deserialize object from file (must have same Matrix size)
+  void deSerialize(std::istream&);
 
   // These functions do not modify the object
   CPUMatrix multiply(const MatrixValType scalar) const;

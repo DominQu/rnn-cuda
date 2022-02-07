@@ -2,6 +2,7 @@
 #include "linalg/GPUMatrix.hpp"
 
 #include "doctest.h"
+#include <sstream>
 
 TEST_CASE("Constructors") {
   // TODO
@@ -78,4 +79,16 @@ TEST_CASE("Elementwise multiplication") {
   GPUMatrix c = a.multiplyelementwise(b);
 
   CHECK(c.toCPU() == CPUMatrix::from({{6,8}, { 6, 8}}));
+}
+
+TEST_CASE("Serialization") {
+  std::stringstream ss; // IRL this would be a file stream
+  auto mat1 = CPUMatrix::from({{3, 4}, {8, 12}});
+  auto mat2 = CPUMatrix::like(mat1);
+  auto mat3 = CPUMatrix(MatrixSize(1, 2));
+  mat1.serialize(ss);
+  mat2.deSerialize(ss);
+
+  CHECK_EQ(mat1, mat2);
+  CHECK_THROWS(mat3.deSerialize(ss));
 }
