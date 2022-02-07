@@ -78,7 +78,7 @@ public:
   inline const MatrixValType *gpuHandle() const { return gpuData; }
 
   /// Synchronizes GPU, should be called before every operation on the array
-  inline void syncGPU() const;
+  void syncGPU() const;
 private:
   MatrixSize size;
   MatrixValType *gpuData; // Pointer to global memory on GPU
