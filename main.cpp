@@ -1,5 +1,6 @@
 #include "linalg/GPUMatrix.hpp"
 #include "layers/lstmlayer.hpp"
+#include "layers/softmax.hpp"
 #include "loader/loader.hpp"
 #include <iostream>
 
@@ -66,6 +67,13 @@ int main() {
   GPUMatrix cost(output.getSize(), 1);
   cost.add(output.multiply(-1), cost);
   std::vector<GPUMatrix> gradients = layer.backward(cost, batch);
+  std::cout << "Softmax: " << std::endl;
+
+  Softmax softmax(2);
+  Matrix s = Matrix::from({{0.3}, {1.4}});
+
+  Matrix result = softmax.forward(s);
+  result.show(std::cout);
 
 
   return 0;
