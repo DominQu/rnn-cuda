@@ -32,8 +32,8 @@ public:
   /// Destructor
   ~LstmLayer() {};
   ///Forward pass of lstm layer on given batch
-  Matrix forward(std::vector<CPUMatrix> batch);
+  Matrix forward(std::vector<GPUMatrix> batch);
   ///Backward pass of lstm layer, returns vector of gradients
-  std::vector<GPUMatrix> backward(GPUMatrix upstream, std::vector<CPUMatrix> batch);
+  std::vector<GPUMatrix> backward(GPUMatrix upstream, std::vector<GPUMatrix> batch);
 
 };

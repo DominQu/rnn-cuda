@@ -23,11 +23,35 @@ __global__ void dsoftmaxforward(const MatrixValType *input, MatrixValType *resul
   }
 }
 
-GPUMatrix Softmax::forward(const GPUMatrix &input) {
+__global__ void dnormalize(const MatrixValType *input,MatrixValType *result, MatrixSize inputsize) {
+    const auto i = blockIdx.x * blockDim.x + threadIdx.x;
+    MatrixValType max = 0;
+    if(i < inputsize.total) {
+      
+      for(int t = 0; t < inputsize.total; t++) {
+          if(input[t] > max) {
+              max = input[t];
+          }
+      }
+      __syncthreads();
+      result[i] = input[i] - max;
+    }
+}
+
+GPUMatrix Softmax::normalize(const GPUMatrix &input) {
   GPUMatrix result = GPUMatrix::like(input);
+  int ThreadsPerSM = input.getSize().total % 1024;
+  int SMs = input.getSize().total / 1024 + 1;
+  dnormalize<<<SMs, ThreadsPerSM>>>(input.gpuHandle(), result.gpuHandle(), input.getSize());
+  result.syncGPU();
+  return result;
+}
+
+GPUMatrix Softmax::forward(const GPUMatrix &input) {
+  GPUMatrix result = this->normalize(input);
   MatrixValType *sum;
   cudaMalloc(&sum, sizeof(MatrixValType));
-  dsoftmaxforward<<<SMs, ThreadsPerSM>>>(input.gpuHandle(), result.gpuHandle(), input.getSize(), sum);
+  dsoftmaxforward<<<SMs, ThreadsPerSM>>>(result.gpuHandle(), result.gpuHandle(), input.getSize(), sum);
   result.syncGPU();
   cudaFree(sum);
   return result;

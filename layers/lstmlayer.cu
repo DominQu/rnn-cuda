@@ -108,7 +108,7 @@ void LstmLayer::applyTanh(GPUMatrix &input, GPUMatrix &result) {
   CUDA_CALL(cudaGetLastError());
 }
 
-Matrix LstmLayer::forward(std::vector<CPUMatrix> batch) {
+Matrix LstmLayer::forward(std::vector<GPUMatrix> batch) {
   
   GPUMatrix w_x_input_f(MatrixSize(this->state_dim, 1));
   GPUMatrix w_x_input_g(MatrixSize(this->state_dim, 1));
@@ -126,9 +126,10 @@ Matrix LstmLayer::forward(std::vector<CPUMatrix> batch) {
   GPUMatrix state_input_o(MatrixSize(this->state_dim, 1));
   
   for(int t = 0; t < this->timesteps; t++) {
-    
-    GPUMatrix input = GPUMatrix::from(batch[t]);
-    input.syncGPU();
+    GPUMatrix input = batch[t];
+  
+    // GPUMatrix input = GPUMatrix::from(batch[t]);
+    // input.syncGPU();
 
     /// Multiply input and state with weights
     this->input_weights_f.multiply(input, w_x_input_f);
@@ -168,7 +169,7 @@ Matrix LstmLayer::forward(std::vector<CPUMatrix> batch) {
 }
 
 std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream, 
-                                           std::vector<CPUMatrix> batch) {
+                                           std::vector<GPUMatrix> batch) {
   std::vector<GPUMatrix> gradients;
 
   GPUMatrix gradient_input_f(this->input_weights_f.getSize(), 0);
@@ -198,8 +199,9 @@ std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream,
 
   for( int t = this->timesteps - 1; t >= 0; --t) {
 
-    GPUMatrix input = GPUMatrix::from(batch[t]);
-    input.syncGPU();
+    GPUMatrix input = batch[t];
+    // GPUMatrix input = GPUMatrix::from(batch[t]);
+    // input.syncGPU();
     
     GPUMatrix ones(MatrixSize(this->state_dim, 1), 1);
     ones.syncGPU();

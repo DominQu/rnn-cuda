@@ -1,16 +1,18 @@
 #include "linalg/GPUMatrix.hpp"
 #include "layers/lstmlayer.hpp"
 #include "layers/softmax.hpp"
+#include "layers/CCEloss.hpp"
 #include "loader/loader.hpp"
 #include <iostream>
 
 using Matrix = GPUMatrix;
 
-void testDataset() {
+std::vector<GPUMatrix> testDataset() {
   try {
     DataLoader dl("data/dziady-ascii.txt");
     dl.show(std::cout);
-    auto batch = dl.getBatch(32);
+    auto batch = dl.getBatch(2);
+    return batch;
   } catch (const std::exception &ex) {
     std::cerr << ex.what() << std::endl;
   }
@@ -56,25 +58,30 @@ int main() {
 
   std::cout << "\n";
 
+
+  std::vector<GPUMatrix> batch = testDataset();
+
   std::cout << "LSTM forward pass:" << std::endl;
 
-  LstmLayer layer(64, 512, 2, 0, 1);
-  std::vector<CPUMatrix> batch;
-  batch.emplace_back(MatrixSize(64,1), 1);
-  batch.emplace_back(MatrixSize(64,1), 1);
+  int input_size = 64;
+  int state_size = 512;
+  int timesteps = 2;
+
+  LstmLayer layer(input_size, state_size, timesteps, 0, 1);
+  Softmax softmax(input_size);
+  CCEloss cceloss;
+
 
   GPUMatrix output = layer.forward(batch);
-  GPUMatrix cost(output.getSize(), 1);
-  cost.add(output.multiply(-1), cost);
-  std::vector<GPUMatrix> gradients = layer.backward(cost, batch);
-  std::cout << "Softmax: " << std::endl;
+  GPUMatrix probabilities = softmax.forward(output);
+  MatrixValType loss = cceloss.forward(probabilities, batch[1]); //Not an actual label
 
-  Softmax softmax(2);
-  Matrix s = Matrix::from({{0.3}, {1.4}});
+  std::cout << "Loss: " << loss << std::endl;
+  std::cout << "Forward pass finished" << std::endl;
 
-  Matrix result = softmax.forward(s);
-  result.show(std::cout);
-
+  // Matrix grad = loss.backward(result, label);
+  // grad.show(std::cout);
+  // std::vector<GPUMatrix> gradients = layer.backward(cost, batch);
 
   return 0;
 }

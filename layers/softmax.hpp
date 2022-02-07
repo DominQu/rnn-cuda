@@ -5,6 +5,7 @@
 class Softmax {
   private:
   int input_dim;
+  GPUMatrix normalize(const GPUMatrix &input);
   public:
   Softmax(int input_dim);
   ~Softmax() {};

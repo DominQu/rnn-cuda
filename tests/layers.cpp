@@ -10,7 +10,7 @@ TEST_CASE("lstm layer forward") {
   const int minweight = 0;
   const int maxweight = 1;
   LstmLayer layer(input_dim, state_dim, timesteps, minweight, maxweight);
-  std::vector<CPUMatrix> batch;
+  std::vector<GPUMatrix> batch;
   for(int t = 0; t < timesteps; t++) {
     batch.emplace_back(MatrixSize(input_dim,1), 1);
   }
