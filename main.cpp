@@ -1,10 +1,7 @@
 #include "linalg/GPUMatrix.hpp"
-<<<<<<< HEAD
 #include "layers/lstmlayer.hpp"
-=======
 #include "loader/loader.hpp"
 #include <iostream>
->>>>>>> 7f6cc126addd0ef6d88c708de38d2fbe5fb04a9d
 
 using Matrix = GPUMatrix;
 
@@ -66,8 +63,10 @@ int main() {
   batch.emplace_back(MatrixSize(64,1), 1);
 
   GPUMatrix output = layer.forward(batch);
-  // output.show(std::cout);
-  std::cout << output.getSize().height << std::endl;
+  GPUMatrix cost(output.getSize(), 1);
+  cost.add(output.multiply(-1), cost);
+  std::vector<GPUMatrix> gradients = layer.backward(cost, batch);
+
 
   return 0;
 }
