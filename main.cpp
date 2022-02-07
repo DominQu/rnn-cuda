@@ -11,7 +11,7 @@ std::vector<GPUMatrix> testDataset() {
   try {
     DataLoader dl("data/dziady-ascii.txt");
     dl.show(std::cout);
-    auto batch = dl.getBatch(2);
+    auto batch = dl.getBatch(1024);
     return batch;
   } catch (const std::exception &ex) {
     std::cerr << ex.what() << std::endl;

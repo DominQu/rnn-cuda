@@ -6,14 +6,14 @@
 #include <fstream>
 #include <istream>
 #include <ostream>
-#include <stdexcept>
 #include <random>
+#include <stdexcept>
 #include <string>
 
-OneHot::OneHot(std::istream& inputStream) {
+OneHot::OneHot(std::istream &inputStream) {
   while (!inputStream.eof() && !inputStream.fail()) {
     char character;
-    inputStream >> character;
+    inputStream.get(character);
     if (this->onehotMap[character] == 0)
       this->onehotMap[character] = this->onehotMap.size();
   }
@@ -32,15 +32,17 @@ CPUMatrix OneHot::encode(const char input) const {
   throw std::runtime_error("Invalid Onehot input to encode");
 }
 
-char OneHot::decode(const CPUMatrix& input) const {
+char OneHot::decode(const CPUMatrix &input) const {
   if (input.getSize().height != this->onehotMap.size())
     throw std::runtime_error("Onehot input to decode has invalid size");
-  
+
   for (std::size_t y = 0; y < input.getSize().height; y++) {
     if (input.at(y, 0) == 1) {
       // This is some crazy map shit
-      for (auto it = this->onehotMap.begin(); it != this->onehotMap.end(); it++) {
-	if (it->second == y + 1) return it->first;
+      for (auto it = this->onehotMap.begin(); it != this->onehotMap.end();
+           it++) {
+        if (it->second == y + 1)
+          return it->first;
       }
     }
   }
@@ -49,7 +51,7 @@ char OneHot::decode(const CPUMatrix& input) const {
 }
 
 DataLoader::DataLoader(const char *path)
-  : path(path), inputFile(path, std::ios::binary), oh(inputFile)      {
+  : path(path), inputFile(path, std::ios::binary), oh(inputFile) {
   this->loadDatasetSize();
 }
 
@@ -73,23 +75,22 @@ std::vector<GPUMatrix> DataLoader::getBatch(const std::size_t N) {
 
   this->inputFile.clear();
   this->inputFile.seekg(index);
-  
-  for (std::size_t i = 0; i < N; i++) {
+
+  // Wait for paragraph to start
+  for (char c = ' '; c != '\n'; this->inputFile.get(c)) { }
+
+  // Load data into batch
+  for (std::size_t i = 0; i < N && !this->inputFile.eof(); i++) {
     char c;
-    this->inputFile >> c;
+    this->inputFile.get(c);
     result.emplace_back(GPUMatrix::from(oh.encode(c)));
   }
 
   return result;
 }
 
-void DataLoader::show(std::ostream& outputStream) {
-  outputStream
-    << "Dataset from "
-    << this->getPath()
-    << " of "
-    << this->getDatasetSize()
-    << " characters ("
-    << this->oh.getCharacterAmount()
-    << " unique)\n";
+void DataLoader::show(std::ostream &outputStream) {
+  outputStream << "Dataset from " << this->getPath() << " of "
+               << this->getDatasetSize() << " characters ("
+               << this->oh.getCharacterAmount() << " unique)\n";
 }

@@ -32,6 +32,8 @@ class DataLoader {
 public:
   DataLoader(const char* path);
 
+  /// Loads batch of preferable (maximum) size of N.
+  /// Resulting vector may be smaller than N.
   std::vector<GPUMatrix> getBatch(const std::size_t N);
 
   inline const char* getPath() const {
@@ -40,6 +42,10 @@ public:
 
   std::size_t getDatasetSize() const {
     return this->datasetSize;
+  }
+
+  const OneHot& getOneHot() const {
+    return this->oh;
   }
 
   void show(std::ostream&);
