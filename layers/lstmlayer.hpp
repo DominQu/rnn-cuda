@@ -31,9 +31,22 @@ public:
   LstmLayer(int input_dim, int state_dim, int timesteps, int weight_min, int weight_max);
   /// Destructor
   ~LstmLayer() {};
-  ///Forward pass of lstm layer on given batch
+  ///Forward pass of lstm layer on given batch.
   Matrix forward(std::vector<GPUMatrix> batch);
   ///Backward pass of lstm layer, returns vector of gradients
   std::vector<GPUMatrix> backward(GPUMatrix upstream, std::vector<GPUMatrix> batch);
+  /** Update weights of the network, this function doesn't implement an optimizer.
+  * scaled_gradients should contain gradients in this order:
+  * f gate input weights gradient
+  * g gate input weights gradient
+  * i gate input weights gradient
+  * o gate input weights gradient
+  * f gate state weights gradient
+  * g gate state weights gradient
+  * i gate state weights gradient
+  * o gate state weights gradient
+  * output linear layer weights gradient
+  */
+  void updateWeights(std::vector<GPUMatrix> scaled_gradients);
 
 };

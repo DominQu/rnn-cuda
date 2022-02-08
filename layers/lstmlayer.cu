@@ -196,15 +196,13 @@ std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream,
       }
   // Initialize gradient connected with c with zeros
   GPUMatrix gradient_upstream_c(this->c[0].getSize(), 0);
+  
+  GPUMatrix ones(MatrixSize(this->state_dim, 1), 1);
+  ones.syncGPU();
 
   for( int t = this->timesteps - 1; t >= 0; --t) {
 
     GPUMatrix input = batch[t];
-    // GPUMatrix input = GPUMatrix::from(batch[t]);
-    // input.syncGPU();
-    
-    GPUMatrix ones(MatrixSize(this->state_dim, 1), 1);
-    ones.syncGPU();
 
     //Calculate tanh derivative 1 - tanh^2(c)
     GPUMatrix tanh_squared = tanh_c[t].multiplyelementwise(tanh_c[t]);
@@ -250,7 +248,6 @@ std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream,
     //x = dUpstream * tanh(c) * sigmoid(Wo*input) * (1 - sigmoid(Wo*input))
     //dUpstream/dw_input_o = x * input
     //dUpstream/dw_state_o = x * h[t-1]
-
     GPUMatrix dUp_do = gradient_upstream_h.multiplyelementwise(this->tanh_c[t]);
     dUp_do.multiplyelementwise(o[t], dUp_do);
     dUp_do.multiplyelementwise(ones.add(o[t].multiply(-1)), dUp_do);
@@ -282,4 +279,18 @@ std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream,
   gradients.push_back(gradient_upstream_h);
 
   return gradients;
+}
+
+void LstmLayer::updateWeights(std::vector<GPUMatrix> scaled_gradients) {
+  this->input_weights_f.add(scaled_gradients[0].multiply(-1), this->input_weights_f);
+  this->input_weights_g.add(scaled_gradients[1].multiply(-1), this->input_weights_g);
+  this->input_weights_i.add(scaled_gradients[2].multiply(-1), this->input_weights_i);
+  this->input_weights_o.add(scaled_gradients[3].multiply(-1), this->input_weights_o);
+
+  this->state_weights_f.add(scaled_gradients[4].multiply(-1), this->state_weights_f);
+  this->state_weights_g.add(scaled_gradients[5].multiply(-1), this->state_weights_g);
+  this->state_weights_i.add(scaled_gradients[6].multiply(-1), this->state_weights_i);
+  this->state_weights_o.add(scaled_gradients[7].multiply(-1), this->state_weights_o);
+
+  this->output_weights.add(scaled_gradients[8].multiply(-1), this->output_weights);
 }

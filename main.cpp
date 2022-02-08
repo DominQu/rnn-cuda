@@ -3,6 +3,7 @@
 #include "layers/softmax.hpp"
 #include "layers/CCEloss.hpp"
 #include "loader/loader.hpp"
+#include "optimizer/sgd.hpp"
 #include <iostream>
 
 using Matrix = GPUMatrix;
@@ -49,7 +50,11 @@ int main() {
 
   DataLoader dl("data/dziady-ascii.txt");
   dl.show(std::cout);
-  std::vector<GPUMatrix> batch = dl.getTrainBatch(1024);
+  std::vector<GPUMatrix> batch = dl.getTrainBatch(3);
+  GPUMatrix label = batch.back();
+  batch.pop_back();
+
+  // std::cout << "label size " << label.getSize().height << std::endl;
 
   std::cout << "LSTM forward pass:" << std::endl;
 
@@ -60,18 +65,34 @@ int main() {
   LstmLayer layer(input_size, state_size, timesteps, 0, 1);
   Softmax softmax(input_size);
   CCEloss cceloss;
+  SGD sgd(0.01);
 
 
   GPUMatrix output = layer.forward(batch);
   GPUMatrix probabilities = softmax.forward(output);
-  MatrixValType loss = cceloss.forward(probabilities, batch[1]); //Not an actual label
+  MatrixValType loss = cceloss.forward(probabilities, label);
 
   std::cout << "Loss: " << loss << std::endl;
   std::cout << "Forward pass finished" << std::endl;
 
-  // Matrix grad = loss.backward(result, label);
-  // grad.show(std::cout);
-  // std::vector<GPUMatrix> gradients = layer.backward(cost, batch);
+  std::cout << "Backward pass: " << std::endl;
+
+  Matrix lossgrad = cceloss.backward(probabilities, label);
+  // probabilities.show(std::cout);
+  std::cout << "--------" << std::endl;
+  // lossgrad.show(std::cout);
+
+  std::vector<GPUMatrix> gradients = layer.backward(lossgrad, batch);
+
+  std::cout << "Backward pass finished" << std::endl;
+  
+  std::cout << "Optimizing using stochastic gradient descent" << std::endl;
+
+  std::vector<GPUMatrix> scaled_gradients = sgd.calculateUpdate(gradients);
+  
+  std::cout << "Updating weights" << std::endl;
+
+  layer.updateWeights(scaled_gradients);
 
   return 0;
 }

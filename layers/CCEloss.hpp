@@ -7,6 +7,6 @@ class CCEloss {
   public:
   CCEloss() {};
   ~CCEloss() {};
-  MatrixValType forward(const GPUMatrix &input,const GPUMatrix &label);
+  MatrixValType forward(const GPUMatrix &softmax,const GPUMatrix &label);
   GPUMatrix backward(const GPUMatrix &softmax, const GPUMatrix &label);
 };
