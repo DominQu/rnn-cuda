@@ -34,8 +34,11 @@ public:
 
   /// Loads batch of preferable (maximum) size of N.
   /// Resulting vector may be smaller than N.
-  std::vector<GPUMatrix> getBatch(const std::size_t N);
+  std::vector<GPUMatrix> getTrainBatch(const std::size_t N);
 
+  /// Loads batch of test data (size depends on train percentage)
+  std::vector<GPUMatrix> getTestBatch();
+  
   inline const char* getPath() const {
     return this->path;
   }
@@ -48,7 +51,13 @@ public:
     return this->oh;
   }
 
+  /// Print DataLoader in data friendly way
   void show(std::ostream&);
+
+  /// Set train percentage, between <0, 1>
+  void setTrainPercentage(const float trainPercentage) {
+    this->trainPercentage = trainPercentage;
+  }
 private:
   void loadDatasetSize();
   
@@ -56,4 +65,6 @@ private:
   std::ifstream inputFile;
   std::size_t datasetSize;
   OneHot oh;
+
+  float trainPercentage = 0.9;
 };

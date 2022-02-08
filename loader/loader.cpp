@@ -29,7 +29,11 @@ CPUMatrix OneHot::encode(const char input) const {
     }
   }
 
-  throw std::runtime_error("Invalid Onehot input to encode");
+  std::string message;
+  message += "Invalid OneHot input '";
+  message += input;
+  message += "' to encode !";
+  throw std::runtime_error(message.c_str());
 }
 
 char OneHot::decode(const CPUMatrix &input) const {
@@ -65,27 +69,56 @@ void DataLoader::loadDatasetSize() {
   }
 }
 
-std::vector<GPUMatrix> DataLoader::getBatch(const std::size_t N) {
+std::vector<GPUMatrix> DataLoader::getTrainBatch(const std::size_t N) {
   std::vector<GPUMatrix> result;
-
+  result.reserve(N);
+  
   std::random_device r;
   std::default_random_engine e1(r());
-  std::uniform_int_distribution<int> uniform_dist(0, this->datasetSize - N);
+  std::uniform_int_distribution<int> uniform_dist(0, (this->datasetSize * this->trainPercentage) - N);
   std::size_t index = uniform_dist(e1);
 
   this->inputFile.clear();
   this->inputFile.seekg(index);
 
-  // Wait for paragraph to start
-  for (char c = ' '; c != '\n'; this->inputFile.get(c)) { }
-
+  // Back up for paragraph to start
+  for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
+  // When found the newline, skip it
+  if (this->inputFile.peek() == '\n') this->inputFile.get();
+  
   // Load data into batch
-  for (std::size_t i = 0; i < N && !this->inputFile.eof(); i++) {
-    char c;
-    this->inputFile.get(c);
+  for (std::size_t i = 0; i < N; i++) {
+    char c = this->inputFile.get();
+    if (this->inputFile.eof()) break;
     result.emplace_back(GPUMatrix::from(oh.encode(c)));
   }
 
+  result.shrink_to_fit();
+  return result;
+}
+
+std::vector<GPUMatrix> DataLoader::getTestBatch() {
+  std::vector<GPUMatrix> result;
+  result.reserve((1.0 - this->trainPercentage) * this->datasetSize);
+
+  const std::size_t index = this->trainPercentage * this->datasetSize + 1;
+
+  this->inputFile.clear();
+  this->inputFile.seekg(index);
+
+  // Back up for paragraph to start
+  for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
+  // When found the newline, skip it
+  if (this->inputFile.peek() == '\n') this->inputFile.get();
+
+  // Load data into batch
+  while (true) {
+    char c = this->inputFile.get();
+    if (this->inputFile.eof()) break;
+    result.emplace_back(GPUMatrix::from(oh.encode(c)));
+  }
+
+  result.shrink_to_fit();
   return result;
 }
 

@@ -7,17 +7,6 @@
 
 using Matrix = GPUMatrix;
 
-std::vector<GPUMatrix> testDataset() {
-  try {
-    DataLoader dl("data/dziady-ascii.txt");
-    dl.show(std::cout);
-    auto batch = dl.getBatch(1024);
-    return batch;
-  } catch (const std::exception &ex) {
-    std::cerr << ex.what() << std::endl;
-  }
-}
-
 int main() {
   Matrix a = Matrix::from({{ 1, 3 }, { 4, 5 }});
   Matrix b = Matrix::from({{ 1 }, { 1 }});
@@ -58,8 +47,9 @@ int main() {
 
   std::cout << "\n";
 
-
-  std::vector<GPUMatrix> batch = testDataset();
+  DataLoader dl("data/dziady-ascii.txt");
+  dl.show(std::cout);
+  std::vector<GPUMatrix> batch = dl.getTrainBatch(1024);
 
   std::cout << "LSTM forward pass:" << std::endl;
 
