@@ -25,7 +25,7 @@ class Recurrent {
   Recurrent(int input_size, int state_size, 
             int timesteps, float learning_rate, std::string filepath);
   ~Recurrent(){};
-  void saveModel();
+  void saveModel(std::string modelname);
   std::vector<float> train(int epochs, DataLoader &dl, int log);
   void test(int generated_text_length, DataLoader &dl);
   void generateText(int generated_text_length, DataLoader &dl, std::ostream &stream);

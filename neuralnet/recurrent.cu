@@ -82,9 +82,9 @@ void Recurrent::generateText(int generated_text_length, DataLoader &dl, std::ost
   std::cout << "\n"; 
 }
 
-void Recurrent::saveModel() {
+void Recurrent::saveModel(std::string modelname) {
   std::fstream outFile;
-  outFile.open("model1.txt", std::ios::out);
+  outFile.open(modelname, std::ios::out);
   if (!outFile) {
       std::cout << "Error" << std::endl;
   }

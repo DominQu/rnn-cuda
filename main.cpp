@@ -52,19 +52,35 @@ int main() {
   DataLoader dl("data/dziady-ascii.txt");
   dl.show(std::cout);
   int input_size = dl.getOneHot().getCharacterAmount();
+  int state_size = 128;
+  int timesteps = 100;
+  float learning_rate = 0.01;
+  int epochs = 100;
+  std::string name = "LSTM_epochs_"; 
+  name += std::to_string(epochs);
+  name += "_input_";
+  name += std::to_string(input_size);
+  name += "_state_";
+  name += std::to_string(state_size);
+  name += "_timesteps_";
+  name += std::to_string(timesteps);
+  name += "_lr_";
+  name += std::to_string(learning_rate);
+  std::cout << "Model name: " << name << std::endl;
 
-  Recurrent rnn(input_size, 128, 100,-1,1, 0.01);
-  // Recurrent rnn(input_size, 128, 100, 0.01, "model1.txt");
+  // Choose whether you want new network or load network from file
+  Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate);
+  // Recurrent rnn(input_size, state_size, timesteps, learning_rate, name);
 
-  // std::vector<float> loss = rnn.train(10000, dl, 100);
-  // rnn.generateText(100, dl, std::cout);
-  // rnn.saveModel();
-  // float sum = 0;
-  // for (auto i:loss) {
-  //   sum += i;
-  // }
-  // std::cout << "Mean loss: " << sum / loss.size() << std::endl;
+  std::vector<float> loss = rnn.train(epochs, dl, 100);
+  rnn.generateText(100, dl, std::cout);
+  float sum = 0;
+  for (auto i:loss) {
+    sum += i;
+  }
+  std::cout << "Mean loss: " << sum / loss.size() << std::endl;
 
+  rnn.saveModel(name);
 
   return 0;
 }
