@@ -198,3 +198,19 @@ void CPUMatrix::transpose(CPUMatrix &result) const {
     }
   }
 }
+
+int CPUMatrix::argmax() const {
+  MatrixValType maxval = 0;
+  int index = -1;
+  for(int i = 0; i < this->getSize().height; i++) {
+    if(this->at(i, 0) > maxval) {
+      maxval = this->at(i,0);
+      index = i;
+    }
+  }
+  if(index == -1) {
+    std::cout << "Invalid max index!";
+    return 0;
+  }
+  return index;
+}

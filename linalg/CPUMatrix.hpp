@@ -73,6 +73,8 @@ public:
   CPUMatrix add(const MatrixValType scalar) const;
   void add(const MatrixValType scalar, CPUMatrix &result) const;
 
+  int argmax() const;
+
   /// Return transposed matrix
   CPUMatrix transpose() const;
   /// Transpose matrix into passed result CPUMatrix
