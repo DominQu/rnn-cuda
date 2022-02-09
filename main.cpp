@@ -4,6 +4,7 @@
 #include "layers/CCEloss.hpp"
 #include "loader/loader.hpp"
 #include "optimizer/sgd.hpp"
+#include "neuralnet/recurrent.hpp"
 #include <iostream>
 
 using Matrix = GPUMatrix;
@@ -50,49 +51,20 @@ int main() {
 
   DataLoader dl("data/dziady-ascii.txt");
   dl.show(std::cout);
-  std::vector<GPUMatrix> batch = dl.getTrainBatch(3);
-  GPUMatrix label = batch.back();
-  batch.pop_back();
+  int input_size = dl.getOneHot().getCharacterAmount();
 
-  // std::cout << "label size " << label.getSize().height << std::endl;
+  Recurrent rnn(input_size, 128, 100,-1,1, 0.01);
+  // Recurrent rnn(input_size, 128, 100, 0.01, "model1.txt");
 
-  std::cout << "LSTM forward pass:" << std::endl;
+  // std::vector<float> loss = rnn.train(10000, dl, 100);
+  // rnn.generateText(100, dl, std::cout);
+  // rnn.saveModel();
+  // float sum = 0;
+  // for (auto i:loss) {
+  //   sum += i;
+  // }
+  // std::cout << "Mean loss: " << sum / loss.size() << std::endl;
 
-  int input_size = 64;
-  int state_size = 512;
-  int timesteps = 2;
-
-  LstmLayer layer(input_size, state_size, timesteps, 0, 1);
-  Softmax softmax(input_size);
-  CCEloss cceloss;
-  SGD sgd(0.01);
-
-
-  GPUMatrix output = layer.forward(batch);
-  GPUMatrix probabilities = softmax.forward(output);
-  MatrixValType loss = cceloss.forward(probabilities, label);
-
-  std::cout << "Loss: " << loss << std::endl;
-  std::cout << "Forward pass finished" << std::endl;
-
-  std::cout << "Backward pass: " << std::endl;
-
-  Matrix lossgrad = cceloss.backward(probabilities, label);
-  // probabilities.show(std::cout);
-  std::cout << "--------" << std::endl;
-  // lossgrad.show(std::cout);
-
-  std::vector<GPUMatrix> gradients = layer.backward(lossgrad, batch);
-
-  std::cout << "Backward pass finished" << std::endl;
-  
-  std::cout << "Optimizing using stochastic gradient descent" << std::endl;
-
-  std::vector<GPUMatrix> scaled_gradients = sgd.calculateUpdate(gradients);
-  
-  std::cout << "Updating weights" << std::endl;
-
-  layer.updateWeights(scaled_gradients);
 
   return 0;
 }

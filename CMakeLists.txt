@@ -20,6 +20,7 @@ add_subdirectory("./linalg")
 add_subdirectory("./loader")
 add_subdirectory("./layers")
 add_subdirectory("./optimizer")
+add_subdirectory("./neuralnet")
 add_subdirectory("./tests")
 
 # Copy dataset
@@ -29,7 +30,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data
 add_executable(rnn main.cpp)
 
 target_include_directories(rnn PUBLIC ${PROJECT_SOURCE_DIR})
-target_link_libraries(rnn rnn-linalg rnn-layers rnn-loader rnn-optimizer)
+target_link_libraries(rnn rnn-linalg rnn-neuralnet rnn-layers rnn-loader rnn-optimizer)
 
 add_compile_options(rnn PUBLIC -g -02)
 

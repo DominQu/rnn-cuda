@@ -5,8 +5,8 @@ static int ThreadsPerSM = 0;
 static int SMs = 0;
   
 LstmLayer::LstmLayer(int input_dim, int state_dim, 
-                     int timesteps, int weight_min, 
-                     int weight_max) 
+                     int timesteps, MatrixValType weight_min, 
+                     MatrixValType weight_max) 
   : input_dim(input_dim),
     state_dim(state_dim), 
     timesteps(timesteps),
@@ -54,11 +54,11 @@ LstmLayer::LstmLayer(int input_dim, int state_dim,
   for( int t = 0; t < timesteps; t++) {
     c.emplace_back(MatrixSize(state_dim, 1));
     tanh_c.emplace_back(MatrixSize(state_dim, 1));
-    h.emplace_back(MatrixSize(state_dim, 1));
-    f.emplace_back(MatrixSize(state_dim, 1));
-    g.emplace_back(MatrixSize(state_dim, 1));
-    i.emplace_back(MatrixSize(state_dim, 1));
-    o.emplace_back(MatrixSize(state_dim, 1));
+    h.emplace_back(MatrixSize(state_dim, 1),0);
+    f.emplace_back(MatrixSize(state_dim, 1),0);
+    g.emplace_back(MatrixSize(state_dim, 1),0);
+    i.emplace_back(MatrixSize(state_dim, 1),0);
+    o.emplace_back(MatrixSize(state_dim, 1),0);
   }
 
   // Set number of blocks and threads
@@ -67,6 +67,89 @@ LstmLayer::LstmLayer(int input_dim, int state_dim,
     cudaDeviceGetAttribute(&SMs, cudaDevAttrMultiProcessorCount, 0);
   }
 }
+
+LstmLayer::LstmLayer(int input_dim, int state_dim, int timesteps, std::string filepath) 
+  : input_dim(input_dim),
+    state_dim(state_dim), 
+    timesteps(timesteps),
+    
+    c(std::vector<GPUMatrix>()),
+    tanh_c(std::vector<GPUMatrix>()),
+    h(std::vector<GPUMatrix>()), 
+    f(std::vector<GPUMatrix>()), 
+    g(std::vector<GPUMatrix>()), 
+    i(std::vector<GPUMatrix>()), 
+    o(std::vector<GPUMatrix>()),
+    input_weights_f(GPUMatrix(MatrixSize(state_dim, input_dim), 0)),
+    input_weights_g(GPUMatrix(MatrixSize(state_dim, input_dim), 0)),
+    input_weights_i(GPUMatrix(MatrixSize(state_dim, input_dim), 0)),
+    input_weights_o(GPUMatrix(MatrixSize(state_dim, input_dim), 0)),
+    state_weights_f(GPUMatrix(MatrixSize(state_dim, state_dim), 0)), 
+    state_weights_g(GPUMatrix(MatrixSize(state_dim, state_dim), 0)), 
+    state_weights_i(GPUMatrix(MatrixSize(state_dim, state_dim), 0)), 
+    state_weights_o(GPUMatrix(MatrixSize(state_dim, state_dim), 0)), 
+    output_weights(GPUMatrix(MatrixSize(input_dim, state_dim), 0)) {
+  
+  std::fstream input;
+  input.open(filepath, std::ios::in);
+  if (!input) {
+    std::cout << "Can't open input file!" << std::endl;
+  }
+  else {
+    CPUMatrix input_weights_f_cpu = input_weights_f.toCPU();
+    input_weights_f_cpu.deSerialize(input); 
+    input_weights_f.add(GPUMatrix::from(input_weights_f_cpu), input_weights_f);
+    CPUMatrix input_weights_g_cpu = input_weights_g.toCPU();
+    input_weights_g_cpu.deSerialize(input); 
+    input_weights_g.add(GPUMatrix::from(input_weights_g_cpu), input_weights_g);
+    CPUMatrix input_weights_i_cpu = input_weights_i.toCPU();
+    input_weights_i_cpu.deSerialize(input); 
+    input_weights_i.add(GPUMatrix::from(input_weights_i_cpu), input_weights_i);
+    CPUMatrix input_weights_o_cpu = input_weights_o.toCPU();
+    input_weights_o_cpu.deSerialize(input); 
+    input_weights_o.add(GPUMatrix::from(input_weights_o_cpu), input_weights_o);
+    // input_weights_f.show(std::cout);
+    CPUMatrix state_weights_f_cpu = state_weights_f.toCPU();
+    state_weights_f_cpu.deSerialize(input); 
+    state_weights_f.add(GPUMatrix::from(state_weights_f_cpu), state_weights_f);
+    CPUMatrix state_weights_g_cpu = state_weights_g.toCPU();
+    state_weights_g_cpu.deSerialize(input); 
+    state_weights_g.add(GPUMatrix::from(state_weights_g_cpu), state_weights_g);
+    CPUMatrix state_weights_i_cpu = state_weights_i.toCPU();
+    state_weights_i_cpu.deSerialize(input); 
+    state_weights_i.add(GPUMatrix::from(state_weights_i_cpu), state_weights_i);
+    CPUMatrix state_weights_o_cpu = state_weights_o.toCPU();
+    state_weights_o_cpu.deSerialize(input); 
+    state_weights_o.add(GPUMatrix::from(state_weights_o_cpu), state_weights_o);
+
+    CPUMatrix output_weights_cpu = output_weights.toCPU();
+    output_weights_cpu.deSerialize(input); 
+    output_weights.add(GPUMatrix::from(output_weights_cpu), output_weights);
+    
+    std::cout << "Model loaded succesfully" << std::endl;
+    input.close();
+  }
+  // Initilize carry and state with zeros
+  c.emplace_back(MatrixSize(state_dim, 1), 0);
+  h.emplace_back(MatrixSize(state_dim, 1), 0);
+
+  for( int t = 0; t < timesteps; t++) {
+    c.emplace_back(MatrixSize(state_dim, 1));
+    tanh_c.emplace_back(MatrixSize(state_dim, 1));
+    h.emplace_back(MatrixSize(state_dim, 1),0);
+    f.emplace_back(MatrixSize(state_dim, 1),0);
+    g.emplace_back(MatrixSize(state_dim, 1),0);
+    i.emplace_back(MatrixSize(state_dim, 1),0);
+    o.emplace_back(MatrixSize(state_dim, 1),0);
+  }
+
+  // Set number of blocks and threads
+  if (SMs == 0) {
+    cudaDeviceGetAttribute(&ThreadsPerSM, cudaDevAttrMaxThreadsPerBlock, 0);
+    cudaDeviceGetAttribute(&SMs, cudaDevAttrMultiProcessorCount, 0);
+  }
+}
+
 
 __device__ MatrixValType dsigmoid(MatrixValType x) {
   return (MatrixValType)1.0 / ( (MatrixValType)1.0 + exp(-x));
@@ -127,9 +210,6 @@ Matrix LstmLayer::forward(std::vector<GPUMatrix> batch) {
   
   for(int t = 0; t < this->timesteps; t++) {
     GPUMatrix input = batch[t];
-  
-    // GPUMatrix input = GPUMatrix::from(batch[t]);
-    // input.syncGPU();
 
     /// Multiply input and state with weights
     this->input_weights_f.multiply(input, w_x_input_f);
@@ -159,7 +239,6 @@ Matrix LstmLayer::forward(std::vector<GPUMatrix> batch) {
     c[t + 1].add(i_x_g, c[t + 1]);
     applyTanh(c[t + 1], tanh_c[t]);
     o[t].add(tanh_c[t], h[t + 1]); 
-
 
   }
 
@@ -293,4 +372,18 @@ void LstmLayer::updateWeights(std::vector<GPUMatrix> scaled_gradients) {
   this->state_weights_o.add(scaled_gradients[7].multiply(-1), this->state_weights_o);
 
   this->output_weights.add(scaled_gradients[8].multiply(-1), this->output_weights);
+}
+
+void LstmLayer::saveWeights(std::fstream &output) {
+  this->input_weights_f.toCPU().serialize(output);
+  this->input_weights_g.toCPU().serialize(output);
+  this->input_weights_i.toCPU().serialize(output);
+  this->input_weights_o.toCPU().serialize(output);
+
+  this->state_weights_f.toCPU().serialize(output);
+  this->state_weights_g.toCPU().serialize(output);
+  this->state_weights_i.toCPU().serialize(output);
+  this->state_weights_o.toCPU().serialize(output);
+
+  this->output_weights.toCPU().serialize(output);
 }

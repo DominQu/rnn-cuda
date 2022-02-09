@@ -28,7 +28,9 @@ private:
   void applyTanh(GPUMatrix &input, GPUMatrix &result);
 public:
   /// Constructor with specified sizes of input and state and number of timesteps
-  LstmLayer(int input_dim, int state_dim, int timesteps, int weight_min, int weight_max);
+  LstmLayer(int input_dim, int state_dim, int timesteps, MatrixValType weight_min, MatrixValType weight_max);
+  /// Constructor for loading a model from file
+  LstmLayer(int input_dim, int state_dim, int timesteps, std::string filepath);
   /// Destructor
   ~LstmLayer() {};
   ///Forward pass of lstm layer on given batch.
@@ -48,5 +50,7 @@ public:
   * output linear layer weights gradient
   */
   void updateWeights(std::vector<GPUMatrix> scaled_gradients);
+
+  void saveWeights(std::fstream &output);
 
 };

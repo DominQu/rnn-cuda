@@ -23,6 +23,10 @@ public:
   inline std::size_t getCharacterAmount() const {
     return this->onehotMap.size();
   }
+
+  inline std::map<char, unsigned int> getOneHotMap() const {
+    return this->onehotMap;
+  }
   
 private:
   std::map<char, unsigned int> onehotMap;
