@@ -14,6 +14,7 @@ OneHot::OneHot(std::istream &inputStream) {
   while (!inputStream.eof() && !inputStream.fail()) {
     char character;
     inputStream.get(character);
+    // std::cout << character << std::endl;
     if (this->onehotMap[character] == 0)
       this->onehotMap[character] = this->onehotMap.size();
   }
@@ -82,9 +83,9 @@ std::vector<GPUMatrix> DataLoader::getTrainBatch(const std::size_t N) {
   this->inputFile.seekg(index);
 
   // Back up for paragraph to start
-  for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
-  // When found the newline, skip it
-  if (this->inputFile.peek() == '\n') this->inputFile.get();
+  // for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
+  // // When found the newline, skip it
+  // if (this->inputFile.peek() == '\n') this->inputFile.get();
   
   // Load data into batch
   for (std::size_t i = 0; i < N; i++) {

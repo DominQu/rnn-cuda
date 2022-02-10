@@ -40,10 +40,15 @@ public:
   LstmLayer(int input_dim, int state_dim, int timesteps, std::string filepath);
   /// Destructor
   ~LstmLayer() {};
-  ///Forward pass of lstm layer on given batch.
+  ///Forward pass of lstm layer on given batch, return output of the last hidden cell.
   Matrix forward(std::vector<GPUMatrix> batch);
+  ///Forward pass of lstm layer on given batch, returns outputs of all hidden cells.
+  std::vector<GPUMatrix> forward(std::vector<GPUMatrix> batch, bool return_sequence);
   ///Backward pass of lstm layer, returns vector of gradients
   std::vector<GPUMatrix> backward(GPUMatrix upstream, std::vector<GPUMatrix> batch);
+  /// Backward pass of lstm layer, takes as input upstream gradients for every timestep, returns vector of gradients
+  std::vector<GPUMatrix> backward(std::vector<GPUMatrix> upstream, std::vector<GPUMatrix> batch);
+
   /** Update weights of the network, this function doesn't implement an optimizer.
   * scaled_gradients should contain gradients in this order:
   * f gate input weights gradient

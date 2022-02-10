@@ -57,6 +57,21 @@ GPUMatrix Softmax::forward(const GPUMatrix &input) {
   return result;
 }
 
+std::vector<GPUMatrix> Softmax::forward(const std::vector<GPUMatrix> &input, bool return_sequence) {
+  std::vector<GPUMatrix> output;
+  for(auto &logits : input) {
+    GPUMatrix result = this->normalize(logits);
+    MatrixValType *sum;
+    cudaMalloc(&sum, sizeof(MatrixValType));
+    dsoftmaxforward<<<SMs, ThreadsPerSM>>>(result.gpuHandle(), result.gpuHandle(), logits.getSize(), sum);
+    result.syncGPU();
+    cudaFree(sum);
+    output.push_back(result);
+  }
+  return output;
+}
+
+
 __global__ void dsoftmaxbackward(const MatrixValType *forward_result, MatrixValType *result, int size) {
     const auto i = blockIdx.x * blockDim.x + threadIdx.x;
     int row = i / size;

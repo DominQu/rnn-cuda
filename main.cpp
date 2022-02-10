@@ -49,15 +49,15 @@ int main() {
 
   std::cout << "\n";
 
-  DataLoader dl("data/dziady-ascii.txt");
+  DataLoader dl("data/fakedata-ascii.txt");
   dl.show(std::cout);
   int input_size = dl.getOneHot().getCharacterAmount();
-  int state_size = 256;
-  int timesteps = 100;
+  int state_size = 128;
+  int timesteps = 20;
   float learning_rate = 0.1;
-  int epochs = 2048;
-  int batchsize = 32;
-  int log_rate = 10;
+  int epochs = 10000;
+  int batchsize = 2;
+  int log_rate = 5;
 
   std::string name = "LSTM_epochs_"; 
   name += std::to_string(epochs);
@@ -87,6 +87,18 @@ int main() {
 
   Recurrent::saveLoss(loss, name+"_loss");
   rnn.saveModel(name);
+
+  // std::ofstream outfile("fakedata.txt");
+  // // outfile.open("fakedata.txt", std::ios::binary);
+  // if(!outfile) {
+  //   std::cout << "Error\n";
+  // }
+  // else {
+  //   for(int i = 0 ; i < 1000000; i++) {
+  //     outfile << "abcdef";
+  //   }
+  //   outfile.close();
+  // }
 
   return 0;
 }

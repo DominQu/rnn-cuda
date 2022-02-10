@@ -90,16 +90,37 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
       GPUMatrix label = batch.back();
       batch.pop_back();  
   
-      GPUMatrix lstm_output = this->lstmlayer1.forward(batch);
-      GPUMatrix softmax_output = this->softmax1.forward(lstm_output);
-      MatrixValType cceloss_output = this->cceloss1.forward(softmax_output, label);
+      std::vector<GPUMatrix> lstm_output = this->lstmlayer1.forward(batch, 1);
+      // std::cout << "lstm forward done\n";
+      std::vector<GPUMatrix> softmax_output = this->softmax1.forward(lstm_output, 1);
+      // std::cout << "softmax forward done\n";
+
+      std::vector<MatrixValType> cceloss_output = this->cceloss1.forward(softmax_output, label, batch);
+      // std::cout << "loss forward done\n";
   
-      batch_loss += cceloss_output; 
+      for(auto &i:cceloss_output) {
+        batch_loss += i; 
+      }
   
-  
-      GPUMatrix cceloss_gradient = cceloss1.backward(softmax_output, label);
+      std::vector<GPUMatrix> cceloss_gradient = cceloss1.backward(softmax_output, label, batch);
+      // std::cout << "loss gradient done\n";
+
       std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
+      // std::cout << "lstm gradient done\n";
+
       gradients.push_back(lstm_gradient);
+
+      //Old way 
+      // GPUMatrix lstm_output = this->lstmlayer1.forward(batch);
+      // GPUMatrix softmax_output = this->softmax1.forward(lstm_output);
+      // MatrixValType cceloss_output = this->cceloss1.forward(softmax_output, label);
+  
+      // batch_loss += cceloss_output; 
+  
+  
+      // GPUMatrix cceloss_gradient = cceloss1.backward(softmax_output, label);
+      // std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
+      // gradients.push_back(lstm_gradient);
     }
     for(const auto &i:gradients) {
       gradient_input_f.add(i[0], gradient_input_f);
