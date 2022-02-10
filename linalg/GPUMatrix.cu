@@ -45,7 +45,7 @@ GPUMatrix::GPUMatrix(const MatrixSize &size) : size(size) {
     cudaDeviceGetAttribute(&ThreadsPerSM, cudaDevAttrMaxThreadsPerBlock, 0);
     cudaDeviceGetAttribute(&SMs, cudaDevAttrMultiProcessorCount, 0);
   }
-  
+
   CUDA_CALL(
       cudaMalloc(&this->gpuData, this->size.total * sizeof(MatrixValType)));
 }
@@ -63,7 +63,7 @@ GPUMatrix::GPUMatrix(const GPUMatrix &copied) : GPUMatrix(copied.size) {
              cudaMemcpyDeviceToDevice);
 }
 
-GPUMatrix::GPUMatrix(GPUMatrix&& moved) {
+GPUMatrix::GPUMatrix(GPUMatrix &&moved) {
   this->gpuData = moved.gpuData;
   this->size = moved.size;
   moved.gpuData = nullptr;
@@ -75,17 +75,18 @@ CPUMatrix GPUMatrix::toCPU() const {
   CPUMatrix matrix(this->getSize());
 
   cudaMemcpy(matrix.cpuHandle(), this->gpuData,
-             this->getSize().total * sizeof(MatrixValType), cudaMemcpyDeviceToHost);
+             this->getSize().total * sizeof(MatrixValType),
+             cudaMemcpyDeviceToHost);
 
   return matrix;
 }
 
-GPUMatrix
-GPUMatrix::from(const std::initializer_list<std::initializer_list<MatrixValType>> &input) {
+GPUMatrix GPUMatrix::from(
+    const std::initializer_list<std::initializer_list<MatrixValType>> &input) {
   GPUMatrix m(MatrixSize(input.size(), input.begin()[0].size()));
 
   m.syncGPU();
-  
+
   for (std::size_t y = 0; y < input.size(); y++) {
     cudaMemcpy(&m.gpuData[y * m.size.width], input.begin()[y].begin(),
                m.size.width * sizeof(MatrixValType), cudaMemcpyHostToDevice);
@@ -334,13 +335,14 @@ GPUMatrix GPUMatrix::transpose() const {
 
 /* Elementwise multiplication */
 
-__global__ void multiplyelementwise_gpu(const MatrixValType *in1, const MatrixSize in1Size,
-                                        const MatrixValType *in2, const MatrixSize in2Size,
-                                        MatrixValType *out, const MatrixSize outSize) {
+__global__ void
+multiplyelementwise_gpu(const MatrixValType *in1, const MatrixSize in1Size,
+                        const MatrixValType *in2, const MatrixSize in2Size,
+                        MatrixValType *out, const MatrixSize outSize) {
   for (auto mult = 1;; mult++) {
     const auto i = ((blockIdx.x + 1) * mult - 1) * blockDim.x + threadIdx.x;
 
-    if(i >= outSize.total) {
+    if (i >= outSize.total) {
       return;
     }
 
@@ -348,29 +350,32 @@ __global__ void multiplyelementwise_gpu(const MatrixValType *in1, const MatrixSi
   }
 }
 
-void GPUMatrix::multiplyelementwise(const GPUMatrix &other, GPUMatrix &result) const{
+void GPUMatrix::multiplyelementwise(const GPUMatrix &other,
+                                    GPUMatrix &result) const {
   if (this->getSize().height != other.getSize().height ||
       this->getSize().width != other.getSize().width)
-    throw new InvalidMatrixSize("Current matrix dimensions does not match other matrix dimensions");
+    throw new InvalidMatrixSize(
+        "Current matrix dimensions does not match other matrix dimensions");
   if (this->getSize().height != result.getSize().height ||
       this->getSize().width != result.getSize().width)
-    throw new InvalidMatrixSize("Current matrix dimensions does not match result matrix dimensions");
-  
+    throw new InvalidMatrixSize(
+        "Current matrix dimensions does not match result matrix dimensions");
+
   this->syncGPU();
-  multiplyelementwise_gpu<<<SMs, ThreadsPerSM>>>(this->gpuHandle(), this->getSize(),
-                                                 other.gpuHandle(), other.getSize(),
-                                                 result.gpuData, result.size);
+  multiplyelementwise_gpu<<<SMs, ThreadsPerSM>>>(
+      this->gpuHandle(), this->getSize(), other.gpuHandle(), other.getSize(),
+      result.gpuData, result.size);
 }
 
-GPUMatrix GPUMatrix::multiplyelementwise(const GPUMatrix& other) const {
+GPUMatrix GPUMatrix::multiplyelementwise(const GPUMatrix &other) const {
   GPUMatrix result(MatrixSize(this->size.height, this->size.width));
   this->multiplyelementwise(other, result);
   return result;
 }
 
-
 /* Sqrt */
-__global__ void sqrt_gpu(const MatrixValType *in, MatrixValType *out, const MatrixSize size) {
+__global__ void sqrt_gpu(const MatrixValType *in, MatrixValType *out,
+                         const MatrixSize size) {
   for (auto mult = 1;; mult++) {
     const auto i = ((blockIdx.x + 1) * mult - 1) * blockDim.x + threadIdx.x;
 
@@ -381,17 +386,58 @@ __global__ void sqrt_gpu(const MatrixValType *in, MatrixValType *out, const Matr
   }
 }
 
-void GPUMatrix::sqrt(GPUMatrix& result) const {
+void GPUMatrix::sqrt(GPUMatrix &result) const {
   if (this->getSize().height != result.getSize().height ||
       this->getSize().width != result.getSize().width)
-    throw new InvalidMatrixSize("Current matrix dimensions does not match result matrix dimensions");
-  
+    throw new InvalidMatrixSize(
+        "Current matrix dimensions does not match result matrix dimensions");
+
   this->syncGPU();
-  sqrt_gpu<<<SMs, ThreadsPerSM>>>(this->gpuHandle(), result.gpuHandle(), this->getSize());
+  sqrt_gpu<<<SMs, ThreadsPerSM>>>(this->gpuHandle(), result.gpuHandle(),
+                                  this->getSize());
 }
 
 GPUMatrix GPUMatrix::sqrt() const {
   GPUMatrix result = GPUMatrix::like(*this);
   this->sqrt(result);
+  return result;
+}
+
+/* Elementwise division */
+
+__global__ void divideelementwise_gpu(const MatrixValType *in1,
+                                      const MatrixValType *in2,
+                                      MatrixValType *out,
+                                      const MatrixSize outSize) {
+  for (auto mult = 1;; mult++) {
+    const auto i = ((blockIdx.x + 1) * mult - 1) * blockDim.x + threadIdx.x;
+
+    if (i >= outSize.total) {
+      return;
+    }
+
+    out[i] = in1[i] / in2[i];
+  }
+}
+
+void GPUMatrix::divideelementwise(const GPUMatrix &other,
+                                  GPUMatrix &result) const {
+  if (this->getSize().height != other.getSize().height ||
+      this->getSize().width != other.getSize().width)
+    throw new InvalidMatrixSize(
+        "Current matrix dimensions does not match other matrix dimensions");
+  if (this->getSize().height != result.getSize().height ||
+      this->getSize().width != result.getSize().width)
+    throw new InvalidMatrixSize(
+        "Current matrix dimensions does not match result matrix dimensions");
+
+  this->syncGPU();
+  divideelementwise_gpu<<<SMs, ThreadsPerSM>>>(
+      this->gpuHandle(), other.gpuHandle(), result.gpuHandle(), result.size);
+}
+
+GPUMatrix GPUMatrix::divideelementwise(const GPUMatrix &other) const {
+  GPUMatrix result = GPUMatrix::like(*this);
+  this->divideelementwise(other, result);
   return result;
 }

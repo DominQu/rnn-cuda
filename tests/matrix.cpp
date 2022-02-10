@@ -97,3 +97,10 @@ TEST_CASE("Sqrt") {
   GPUMatrix mat1 = GPUMatrix::from({{4, 16}, {9, 64}}).sqrt();
   CHECK_EQ(mat1.toCPU(), CPUMatrix::from({{2, 4}, {3, 8}}));
 }
+
+TEST_CASE("Divison"){
+  GPUMatrix mat1 = GPUMatrix::from({{4, 8}, {18, 3}});
+  GPUMatrix mat2 = GPUMatrix::from({{2, 4}, {6, 1}});
+
+  CHECK_EQ(mat1.divideelementwise(mat2).toCPU(), CPUMatrix::from({{2, 2}, {3, 3}}));
+}
