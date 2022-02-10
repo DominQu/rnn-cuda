@@ -346,22 +346,22 @@ std::vector<GPUMatrix> LstmLayer::backward(GPUMatrix upstream,
                                            std::vector<GPUMatrix> batch) {
   std::vector<GPUMatrix> gradients;
 
-  GPUMatrix gradient_input_f(this->input_weights_f.getSize(), 0);
-  GPUMatrix gradient_input_g(this->input_weights_g.getSize(), 0);
-  GPUMatrix gradient_input_i(this->input_weights_i.getSize(), 0);
-  GPUMatrix gradient_input_o(this->input_weights_o.getSize(), 0);
+  GPUMatrix gradient_input_f(this->input_weights_f.getSize(), 0.01);
+  GPUMatrix gradient_input_g(this->input_weights_g.getSize(), 0.01);
+  GPUMatrix gradient_input_i(this->input_weights_i.getSize(), 0.01);
+  GPUMatrix gradient_input_o(this->input_weights_o.getSize(), 0.01);
 
-  GPUMatrix gradient_state_f(this->state_weights_f.getSize(), 0);
-  GPUMatrix gradient_state_g(this->state_weights_g.getSize(), 0);
-  GPUMatrix gradient_state_i(this->state_weights_i.getSize(), 0);
-  GPUMatrix gradient_state_o(this->state_weights_o.getSize(), 0);
+  GPUMatrix gradient_state_f(this->state_weights_f.getSize(), 0.01);
+  GPUMatrix gradient_state_g(this->state_weights_g.getSize(), 0.01);
+  GPUMatrix gradient_state_i(this->state_weights_i.getSize(), 0.01);
+  GPUMatrix gradient_state_o(this->state_weights_o.getSize(), 0.01);
 
-  GPUMatrix gradient_input_bias_f(this->input_bias_f.getSize(), 0);
-  GPUMatrix gradient_input_bias_g(this->input_bias_g.getSize(), 0);
-  GPUMatrix gradient_input_bias_i(this->input_bias_i.getSize(), 0);
-  GPUMatrix gradient_input_bias_o(this->input_bias_o.getSize(), 0);
+  GPUMatrix gradient_input_bias_f(this->input_bias_f.getSize(), 0.01);
+  GPUMatrix gradient_input_bias_g(this->input_bias_g.getSize(), 0.01);
+  GPUMatrix gradient_input_bias_i(this->input_bias_i.getSize(), 0.01);
+  GPUMatrix gradient_input_bias_o(this->input_bias_o.getSize(), 0.01);
 
-  GPUMatrix gradient_output_bias(this->output_bias.getSize(), 0);
+  GPUMatrix gradient_output_bias(this->output_bias.getSize(), 0.01);
   gradient_output_bias.add(upstream, gradient_output_bias);
 
   // Calculate gradient connected with last timestep output weights

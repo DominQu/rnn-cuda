@@ -8,7 +8,7 @@
 
 Recurrent::Recurrent(int input_size, int state_size, 
                      int timesteps, float random_weights_low, 
-                     float random_weights_high, float learning_rate, float beta) 
+                     float random_weights_high, float learning_rate, float beta, float epsilon) 
                      : input_size(input_size),
                        state_size(state_size),
                        timesteps(timesteps),
@@ -17,10 +17,10 @@ Recurrent::Recurrent(int input_size, int state_size,
                        softmax1({input_size}), 
                        cceloss1({}), 
                        sgd({learning_rate}),
-                       rms({learning_rate, beta, input_size, state_size}) { }
+                       rms({learning_rate, beta, input_size, state_size, epsilon}) { }
 
 Recurrent::Recurrent(int input_size, int state_size, 
-                     int timesteps, float learning_rate, float beta, std::string filepath) 
+                     int timesteps, float learning_rate, float beta, float epsilon, std::string filepath) 
                      : input_size(input_size),
                        state_size(state_size),
                        timesteps(timesteps),
@@ -29,7 +29,7 @@ Recurrent::Recurrent(int input_size, int state_size,
                        softmax1({input_size}), 
                        cceloss1({}), 
                        sgd({learning_rate}),
-                       rms({learning_rate, beta, input_size, state_size}) { }
+                       rms({learning_rate, beta, input_size, state_size, epsilon}) { }
 
 std::vector<float> Recurrent::train(int epochs, DataLoader &dl, int log) {
   std::vector<float> loss;
@@ -192,7 +192,7 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
     // std::cout << "Showing updated weights: \n";
     // this->lstmlayer1.showWeights();
     // std::cout << "Showing gradient: \n";
-    // gradient_input_f.show(std::cout);
+    // optimizer_output[0].show(std::cout);
 
     
     auto batch_end = std::chrono::high_resolution_clock::now();

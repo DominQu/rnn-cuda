@@ -25,10 +25,10 @@ class Recurrent {
   /// Constructor for training a new network
   Recurrent(int input_size, int state_size, 
             int timesteps, float random_weights_low, 
-            float random_weights_high, float learning_rate, float beta);
+            float random_weights_high, float learning_rate, float beta, float epsilon);
   /// Constructor for loading trained model
   Recurrent(int input_size, int state_size, 
-            int timesteps, float learning_rate, float beta, std::string filepath);
+            int timesteps, float learning_rate, float beta, float epsilon, std::string filepath);
   ~Recurrent(){};
   void saveModel(std::string modelname);
   static void saveLoss(std::vector<MatrixValType> loss, std::string filename);
