@@ -15,17 +15,15 @@ TEST_CASE("CPU <-> GPU") {
   CHECK(a == b.toCPU());
 }
 
-
 TEST_CASE("Adding scalar to the Matrix") {
   const auto case1 = GPUMatrix(MatrixSize(8, 8), 1).add(5);
 
   CHECK(case1.toCPU() == CPUMatrix(MatrixSize(8, 8), 6));
 }
 
-
 TEST_CASE("Adding two Matrices") {
   const auto case1 =
-    GPUMatrix::from({{1, 2}, {3, 4}}).add(GPUMatrix::from({{3, 2}, {1, 0}}));
+      GPUMatrix::from({{1, 2}, {3, 4}}).add(GPUMatrix::from({{3, 2}, {1, 0}}));
   CHECK(case1.toCPU() == CPUMatrix::from({{4, 4}, {4, 4}}));
 
   CHECK_THROWS(GPUMatrix::from({{1, 2}}).add(GPUMatrix::from({{1}, {2}})));
@@ -35,7 +33,6 @@ TEST_CASE("Adding two Matrices") {
 
   CHECK(case2.toCPU() == CPUMatrix::from({{2, 9}, {9, 2}}));
 }
-
 
 TEST_CASE("Simple Multiplication") {
   auto a = GPUMatrix::from({{1, 3}, {4, 5}});
@@ -67,18 +64,21 @@ TEST_CASE("Invalid multiplication") {
 }
 
 TEST_CASE("Transposition") {
-  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().transpose().toCPU() == CPUMatrix::from({{1, 2}, {3, 4}}));
-  CHECK(GPUMatrix::from({{1, 2}}).transpose().toCPU() == CPUMatrix::from({{1}, {2}}));
-  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().toCPU() == CPUMatrix::from({{1, 3}, {2, 4}}));
+  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().transpose().toCPU() ==
+        CPUMatrix::from({{1, 2}, {3, 4}}));
+  CHECK(GPUMatrix::from({{1, 2}}).transpose().toCPU() ==
+        CPUMatrix::from({{1}, {2}}));
+  CHECK(GPUMatrix::from({{1, 2}, {3, 4}}).transpose().toCPU() ==
+        CPUMatrix::from({{1, 3}, {2, 4}}));
 }
 
 TEST_CASE("Elementwise multiplication") {
-  GPUMatrix a = GPUMatrix::from({{3,4}, { 3, 4}});
-  GPUMatrix b = GPUMatrix::from({{2,2}, { 2, 2}});
+  GPUMatrix a = GPUMatrix::from({{3, 4}, {3, 4}});
+  GPUMatrix b = GPUMatrix::from({{2, 2}, {2, 2}});
 
   GPUMatrix c = a.multiplyelementwise(b);
 
-  CHECK(c.toCPU() == CPUMatrix::from({{6,8}, { 6, 8}}));
+  CHECK(c.toCPU() == CPUMatrix::from({{6, 8}, {6, 8}}));
 }
 
 TEST_CASE("Serialization") {
@@ -91,4 +91,9 @@ TEST_CASE("Serialization") {
 
   CHECK_EQ(mat1, mat2);
   CHECK_THROWS(mat3.deSerialize(ss));
+}
+
+TEST_CASE("Sqrt") {
+  GPUMatrix mat1 = GPUMatrix::from({{4, 16}, {9, 64}}).sqrt();
+  CHECK_EQ(mat1.toCPU(), CPUMatrix::from({{2, 4}, {3, 8}}));
 }

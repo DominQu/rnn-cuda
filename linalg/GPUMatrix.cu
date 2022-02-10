@@ -367,3 +367,31 @@ GPUMatrix GPUMatrix::multiplyelementwise(const GPUMatrix& other) const {
   this->multiplyelementwise(other, result);
   return result;
 }
+
+
+/* Sqrt */
+__global__ void sqrt_gpu(const MatrixValType *in, MatrixValType *out, const MatrixSize size) {
+  for (auto mult = 1;; mult++) {
+    const auto i = ((blockIdx.x + 1) * mult - 1) * blockDim.x + threadIdx.x;
+
+    if (i >= size.total)
+      return;
+
+    out[i] = sqrtf(in[i]);
+  }
+}
+
+void GPUMatrix::sqrt(GPUMatrix& result) const {
+  if (this->getSize().height != result.getSize().height ||
+      this->getSize().width != result.getSize().width)
+    throw new InvalidMatrixSize("Current matrix dimensions does not match result matrix dimensions");
+  
+  this->syncGPU();
+  sqrt_gpu<<<SMs, ThreadsPerSM>>>(this->gpuHandle(), result.gpuHandle(), this->getSize());
+}
+
+GPUMatrix GPUMatrix::sqrt() const {
+  GPUMatrix result = GPUMatrix::like(*this);
+  this->sqrt(result);
+  return result;
+}

@@ -66,6 +66,9 @@ public:
   GPUMatrix add(const MatrixValType scalar) const;
   void add(const MatrixValType scalar, GPUMatrix &result) const;
 
+  void sqrt(GPUMatrix &result) const;
+  GPUMatrix sqrt() const;
+  
   /// Return transposed matrix
   GPUMatrix transpose() const;
   /// Transpose matrix into passed result GPUMatrix
