@@ -52,12 +52,13 @@ int main() {
   DataLoader dl("data/fakedata-ascii.txt");
   dl.show(std::cout);
   int input_size = dl.getOneHot().getCharacterAmount();
-  int state_size = 128;
-  int timesteps = 20;
-  float learning_rate = 0.01;
-  int epochs = 1000;
-  int batchsize = 10;
-  int log_rate = 50;
+  int state_size = 248;
+  int timesteps = 100;
+  float learning_rate = 0.0001;
+  float beta = 0.9;
+  int epochs = 500;
+  int batchsize = 20;
+  int log_rate = 10;
 
   std::string name = "LSTM_epochs_"; 
   name += std::to_string(epochs);
@@ -74,8 +75,8 @@ int main() {
   std::cout << "Model name: " << name << std::endl;
 
   // Choose whether you want new network or load network from file
-  Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate);
-  // Recurrent rnn(input_size, state_size, timesteps, learning_rate, name);
+  Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate, beta);
+  // Recurrent rnn(input_size, state_size, timesteps, learning_rate,beta, name);
 
   std::vector<float> loss = rnn.train(epochs, batchsize, dl, log_rate);
   rnn.generateText(100, dl, std::cout);

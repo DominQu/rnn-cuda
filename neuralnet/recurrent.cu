@@ -8,7 +8,7 @@
 
 Recurrent::Recurrent(int input_size, int state_size, 
                      int timesteps, float random_weights_low, 
-                     float random_weights_high, float learning_rate) 
+                     float random_weights_high, float learning_rate, float beta) 
                      : input_size(input_size),
                        state_size(state_size),
                        timesteps(timesteps),
@@ -16,10 +16,11 @@ Recurrent::Recurrent(int input_size, int state_size,
                                    random_weights_low, random_weights_high}), 
                        softmax1({input_size}), 
                        cceloss1({}), 
-                       sgd({learning_rate}) { }
+                       sgd({learning_rate}),
+                       rms({learning_rate, beta, input_size, state_size}) { }
 
 Recurrent::Recurrent(int input_size, int state_size, 
-                     int timesteps, float learning_rate, std::string filepath) 
+                     int timesteps, float learning_rate, float beta, std::string filepath) 
                      : input_size(input_size),
                        state_size(state_size),
                        timesteps(timesteps),
@@ -27,7 +28,8 @@ Recurrent::Recurrent(int input_size, int state_size,
                                    timesteps, filepath}), 
                        softmax1({input_size}), 
                        cceloss1({}), 
-                       sgd({learning_rate}) { }
+                       sgd({learning_rate}),
+                       rms({learning_rate, beta, input_size, state_size}) { }
 
 std::vector<float> Recurrent::train(int epochs, DataLoader &dl, int log) {
   std::vector<float> loss;
@@ -184,7 +186,7 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
     mean_gradients.push_back(gradient_input_bias_o);
     mean_gradients.push_back(gradient_output_bias);
 
-    std::vector<GPUMatrix> optimizer_output = sgd.calculateUpdate(mean_gradients);
+    std::vector<GPUMatrix> optimizer_output = rms.calculateUpdate(mean_gradients);
     lstmlayer1.updateWeights(optimizer_output);
     // std::cout << "Showing updated weights: \n";
     // this->lstmlayer1.showWeights();
@@ -193,10 +195,10 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
 
     
     auto batch_end = std::chrono::high_resolution_clock::now();
-    loss.push_back(batch_loss / batchsize);
+    loss.push_back(batch_loss / (batchsize * this->timesteps));
     if(epoch % log == 0) {
         std::cout << "Epoch: " << epoch;
-        std::cout << ", Current loss: " << batch_loss / batchsize;
+        std::cout << ", Current loss: " << batch_loss / (batchsize * this->timesteps);
         auto durationsec1 = std::chrono::duration_cast<std::chrono::seconds>(batch_end - epoch_start);
         auto durationmilli1 = std::chrono::duration_cast<std::chrono::milliseconds>(batch_end - epoch_start);
         std::cout << ", Epoch time: ";
