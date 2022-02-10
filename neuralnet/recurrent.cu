@@ -188,6 +188,7 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
 
     std::vector<GPUMatrix> optimizer_output = rms.calculateUpdate(mean_gradients);
     lstmlayer1.updateWeights(optimizer_output);
+
     // std::cout << "Showing updated weights: \n";
     // this->lstmlayer1.showWeights();
     // std::cout << "Showing gradient: \n";

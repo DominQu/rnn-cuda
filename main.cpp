@@ -53,10 +53,10 @@ int main() {
   dl.show(std::cout);
   int input_size = dl.getOneHot().getCharacterAmount();
   int state_size = 248;
-  int timesteps = 100;
-  float learning_rate = 0.0001;
+  int timesteps = 20;
+  float learning_rate = 0.01;
   float beta = 0.9;
-  int epochs = 500;
+  int epochs = 100;
   int batchsize = 20;
   int log_rate = 10;
 
