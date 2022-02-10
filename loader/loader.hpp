@@ -40,6 +40,9 @@ public:
   /// Resulting vector may be smaller than N.
   std::vector<GPUMatrix> getTrainBatch(const std::size_t N);
 
+  /// Loads batch sequentialy
+  std::vector<GPUMatrix> getTrainSequence(const std::size_t N, const int stride);
+
   /// Loads batch of test data (size depends on train percentage)
   std::vector<GPUMatrix> getTestBatch();
   
@@ -69,6 +72,7 @@ private:
   std::ifstream inputFile;
   std::size_t datasetSize;
   OneHot oh;
+  int file_position;
 
   float trainPercentage = 0.9;
 };

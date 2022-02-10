@@ -56,7 +56,7 @@ char OneHot::decode(const CPUMatrix &input) const {
 }
 
 DataLoader::DataLoader(const char *path)
-  : path(path), inputFile(path, std::ios::binary), oh(inputFile) {
+  : path(path), inputFile(path, std::ios::binary), oh(inputFile), file_position(0) {
   this->loadDatasetSize();
 }
 
@@ -94,6 +94,36 @@ std::vector<GPUMatrix> DataLoader::getTrainBatch(const std::size_t N) {
     result.emplace_back(GPUMatrix::from(oh.encode(c)));
   }
 
+  result.shrink_to_fit();
+  return result;
+}
+
+std::vector<GPUMatrix> DataLoader::getTrainSequence(const std::size_t N, const int stride) {
+  std::vector<GPUMatrix> result;
+  result.reserve(N);
+
+  this->inputFile.clear();
+  this->inputFile.seekg(this->file_position);
+
+  // Back up for paragraph to start
+  // for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
+  // // When found the newline, skip it
+  // if (this->inputFile.peek() == '\n') this->inputFile.get();
+  
+  // Load data into batch
+  for (std::size_t i = 0; i < N; i++) {
+    char c = this->inputFile.get();
+    if (this->inputFile.eof()) {
+      this->inputFile.clear();
+      this->inputFile.seekg(0);
+      c = this->inputFile.get();
+    }
+    result.emplace_back(GPUMatrix::from(oh.encode(c)));
+  }
+  if (result.size() != N) {
+    std::cout << "Not enough elements in batch!" << std::endl;
+  }
+  this->file_position = (this->file_position + stride ) % this->datasetSize;
   result.shrink_to_fit();
   return result;
 }

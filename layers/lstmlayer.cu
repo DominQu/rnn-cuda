@@ -519,12 +519,9 @@ std::vector<GPUMatrix> LstmLayer::backward(std::vector<GPUMatrix> upstream, std:
     if(t != this->timesteps -1) {
       gradient_upstream_h.add(this->output_weights.transpose().multiply(upstream[t]), gradient_upstream_h);
     }
-    // std::cout << "outpu bias shape " << gradient_output_bias.getSize().height << std::endl;
-    // std::cout << "gradient upstream shape " << gradient_upstream_h.getSize().height << std::endl;
 
     gradient_output_bias.add(upstream[t], gradient_output_bias);
     gradient_output_weights.add(upstream[t].multiply(this->h[t].transpose()), gradient_output_weights);
-    // std::cout << "bias and weights grad\n";
     GPUMatrix input = batch[t];
 
     //Calculate tanh derivative 1 - tanh^2(c)
