@@ -8,7 +8,7 @@ GUSLARZ
 
 Zamknijcie drzwi od kaplicy
 I stancie dokola truny;
-Zadnej lampy, zadnej swiécy,
+Zadnej lampy, zadnej swiecy,
 W oknach zawiescie caluny.
 Niech ksiezyca jasnosc blada
 Szczelinami tu nie wpada.
@@ -55,7 +55,7 @@ GUSLARZ
 Podajcie mi garsc kadzieli,
 Zapalam ja; wy z pospiechem,
 Skoro plomyk w gore strzeli,
-Pedźcie go z lekkim oddechem.
+Pedacie go z lekkim oddechem.
 O tak, o tak, dalej, dalej,
 Niech sie na powietrzu spali.
 
@@ -167,7 +167,7 @@ A jej praca stroic lalki.
 Przylatujemy na Dziady
 Nie dla modlow i biesiady,
 Niepotrzebna msza ofiarna;
-Nie o paczki, mleczka, chrusty —
+Nie o paczki, mleczka, chrusty
 Prosim gorczycy dwa ziarna;
 A ta usluga tak marna
 Stanie za wszystkie odpusty.
@@ -191,7 +191,7 @@ GUSLARZ
 Aniolku, duszeczko!
 Czego chciales, macie obie.
 To ziarneczko, to ziarneczko,
-Teraz z Bogiem idźcie sobie.
+Teraz z Bogiem idzcie sobie.
 A kto prosby nie poslucha,
 W imie Ojca, Syna, Ducha.
 Widzicie Panski krzyz?
@@ -216,7 +216,7 @@ GUSLARZ
 
 Juz straszna polnoc przybywa,
 Zamykajcie drzwi na klodki;
-Weźcie smolny pek luczywa,
+Wezcie smolny pek luczywa,
 Stawcie w srodku kociol wodki.
 A gdy laska skine z dala,
 Niechaj sie wodka zapala.
@@ -350,7 +350,7 @@ Aby sie dostac do nieba?
 
 WIDMO
 
-Do nieba?… bluźnisz daremnie…
+Do nieba? bluznisz daremnie
 O nie! ja nie chce do nieba;
 Ja tylko chce, zeby ze mnie
 Predzej sie dusza wywlekla.
@@ -427,7 +427,7 @@ O co? o owoce z lasu,
 Ktore na wspolna wygode
 Bog dal jak ogien i wode.
 Ale pan gniewny zawola:
-„Potrzeba dac przyklad grozy”.
+"Potrzeba dac przyklad grozy".
 Zbiegl sie lud z calego siola,
 Przywiazano mnie do sochy,
 Zbito dziesiec pekow lozy.
@@ -466,13 +466,13 @@ Ale ty, panie, bez duszy!
 Hulajac w pjanej ochocie,
 Przewalajac sie po zlocie,
 Hajdukowi rzekles z cicha:
-„Kto tam gosciom trabi w uszy?
-Wypedź zebraczke, do licha”.
+Kto tam gosciom trabi w uszy?
+Wypedz zebraczke, do licha
 Posluchal hajduk niecnota,
 Za wlosy wywlekl za wrota!
 Wepchnal mie z dzieckiem do sniegu!
 Zbita i przeziebla srodze,
-Nie moglam znaleźc noclegu;
+Nie moglam znalezc noclegu;
 Zmarzlam z dziecieciem na drodze.
 Nie znales litosci, panie!
 
@@ -511,7 +511,7 @@ Temu czlowiek nic nie pomoze.
 GUSLARZ
 
 Gdy nic tobie nie pomoze,
-Idźze sobie precz, nieboze.
+Idzcie sobie precz, nieboze.
 A kto prosby nie poslucha,
 W Imie Ojca, Syna, Ducha.
 Czy widzisz Panski krzyz?
@@ -551,7 +551,7 @@ GUSLARZ
 Teraz wy, posrednie duchy,
 Coscie u tego padolu
 Ciemnoty i zawieruchy
-Zylyscie z ludźmi pospolu;
+Zylyscie z ludÅºmi pospolu;
 Lecz, od ludzkiej wolne skazy,
 Zylyscie nie nam, nie swiatu,
 Jako te czabry i slazy,
@@ -737,7 +737,7 @@ Darmo biezycie; to sa marne cienie,
 Darmo raczki sciaga biedna,
 Wraz ja spedzi wiatru tchnienie.
 Lecz nie placz, piekna dziewico!
-Oto przed moja źrenica
+Oto przed moja renica
 Odkryto przyszle wyroki:
 Jeszcze musisz sama jedna
 Latac z wiatrem przez dwa roki,
@@ -783,11 +783,11 @@ Ktora pragnie, ktora laknie.
 GUSLARZ
 
 Czas odemknac drzwi kaplicy.
-Zapalcie lampy i swiécy.
+Zapalcie lampy i swiÃ©cy.
 Przeszla polnoc, kogut pieje,
 Skonczona straszna ofiara,
 Czas przypomniec ojcow dzieje.
-Stojcie…
+Stojcie
 
 
 CHOR
@@ -810,7 +810,7 @@ GUSLARZ
 
 / do jednej z wiesniaczek /
 
-Pasterko, ot tam w zalobie…
+Pasterko, ot tam w zalobie
 Wstan, bo czy mi sie wydaje,
 Czy ty usiadlas na grobie?
 Dziatki! patrzajcie, dla Boga!
@@ -873,7 +873,7 @@ Coz to, nic nie odpowiada?
 GUSLARZ
 
 Gdy gardzisz msza i pierogiem.
-Idźze sobie z Panem Bogiem;
+IdÅºze sobie z Panem Bogiem;
 A kto prosby nie poslucha,
 W imie Ojca, Syna, Ducha!
 Czy widzisz Panski krzyz?
@@ -910,7 +910,7 @@ GUSLARZ
 Duszo przekleta czy bloga,
 Opuszczaj swiete obrzedy!
 Oto roztwarta podloga,
-Kedy wszedles, wychodź tedy.
+Kedy wszedles, wychodÅº tedy.
 Bo cie przeklne w imie Boga.
 
 / po pauzie /
@@ -933,7 +933,7 @@ GUSLARZ
 
 Darmo prosze, darmo gromie,
 On sie przeklectwa nie boi.
-Dajcie kropidlo z oltarza…
+Dajcie kropidlo z oltarza
 Nie pomaga i kropidlo!
 Bo utrapione straszydlo
 Jak stanelo, tak i stoi,
@@ -975,11 +975,11 @@ Co w nim widzisz wesolego?
 GUSLARZ
 
 Daj mnie stule i gromnice,
-Zapale, jeszcze poswiece…
+Zapale, jeszcze poswiece
 Prozno pale, prozno swiece,
 Nie znika przekleta dusza.
-Weźcie pasterke pod rece,
-Wyprowadźcie za kaplice.
+WeÅºcie pasterke pod rece,
+WyprowadÅºcie za kaplice.
 Czegoz ogladasz sie, czego?
 Co w nim widzisz powabnego?
 
@@ -993,7 +993,7 @@ Co w nim widzisz powabnego?
 GUSLARZ
 
 Przebog, widmo kroku rusza!
-Gdzie my z nia, on za nia wszedzie…
+Gdzie my z nia, on za nia wszedzie
 Co to bedzie, co to bedzie?
 
 
