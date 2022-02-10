@@ -52,13 +52,17 @@ int main() {
   DataLoader dl("data/dziady-ascii.txt");
   dl.show(std::cout);
   int input_size = dl.getOneHot().getCharacterAmount();
-  int state_size = 128;
+  int state_size = 256;
   int timesteps = 100;
-  float learning_rate = 0.01;
-  int epochs = 100;
+  float learning_rate = 0.1;
+  int epochs = 2048;
+  int batchsize = 32;
   int log_rate = 10;
+
   std::string name = "LSTM_epochs_"; 
   name += std::to_string(epochs);
+  name += "_batch_";
+  name += std::to_string(batchsize);
   name += "_input_";
   name += std::to_string(input_size);
   name += "_state_";
@@ -73,7 +77,7 @@ int main() {
   Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate);
   // Recurrent rnn(input_size, state_size, timesteps, learning_rate, name);
 
-  std::vector<float> loss = rnn.train(epochs, dl, log_rate);
+  std::vector<float> loss = rnn.train(epochs, batchsize, dl, log_rate);
   rnn.generateText(100, dl, std::cout);
   float sum = 0;
   for (auto i:loss) {
@@ -81,6 +85,7 @@ int main() {
   }
   std::cout << "Mean loss: " << sum / loss.size() << std::endl;
 
+  Recurrent::saveLoss(loss, name+"_loss");
   rnn.saveModel(name);
 
   return 0;
