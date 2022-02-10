@@ -56,6 +56,7 @@ int main() {
   int timesteps = 100;
   float learning_rate = 0.01;
   int epochs = 100;
+  int log_rate = 10;
   std::string name = "LSTM_epochs_"; 
   name += std::to_string(epochs);
   name += "_input_";
@@ -72,7 +73,7 @@ int main() {
   Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate);
   // Recurrent rnn(input_size, state_size, timesteps, learning_rate, name);
 
-  std::vector<float> loss = rnn.train(epochs, dl, 100);
+  std::vector<float> loss = rnn.train(epochs, dl, log_rate);
   rnn.generateText(100, dl, std::cout);
   float sum = 0;
   for (auto i:loss) {

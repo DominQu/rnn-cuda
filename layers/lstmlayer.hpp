@@ -24,11 +24,18 @@ private:
   GPUMatrix state_weights_i;
   GPUMatrix state_weights_o;
   GPUMatrix output_weights;
+  GPUMatrix input_bias_f;
+  GPUMatrix input_bias_g;
+  GPUMatrix input_bias_i;
+  GPUMatrix input_bias_o;
+  GPUMatrix output_bias;
   void applySigmoid(GPUMatrix &input, GPUMatrix &result);
   void applyTanh(GPUMatrix &input, GPUMatrix &result);
 public:
   /// Constructor with specified sizes of input and state and number of timesteps
-  LstmLayer(int input_dim, int state_dim, int timesteps, MatrixValType weight_min, MatrixValType weight_max);
+  LstmLayer(int input_dim, int state_dim, int timesteps, 
+            MatrixValType weight_min, MatrixValType weight_max, 
+            MatrixValType bias_init=0);
   /// Constructor for loading a model from file
   LstmLayer(int input_dim, int state_dim, int timesteps, std::string filepath);
   /// Destructor

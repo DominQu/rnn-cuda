@@ -3,7 +3,8 @@
 __global__ void dcceforward(const MatrixValType *input, MatrixValType *result, int size) {
   const auto i = blockIdx.x * blockDim.x + threadIdx.x;
   if ( i < size) {
-    result[i] = logf(input[i]);
+    result[i] = -1 * logf(input[i]);
+    // printf("Current loss %f", result[i]);
   }
 }
 
