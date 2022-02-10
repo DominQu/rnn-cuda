@@ -64,5 +64,6 @@ public:
   void updateWeights(std::vector<GPUMatrix> scaled_gradients);
 
   void saveWeights(std::fstream &output);
+  void showWeights();
 
 };

@@ -332,7 +332,7 @@ std::vector<GPUMatrix> LstmLayer::forward(std::vector<GPUMatrix> batch, bool ret
     GPUMatrix i_x_g = i[t].multiplyelementwise(g[t]);
     c[t + 1].add(i_x_g, c[t + 1]);
     applyTanh(c[t + 1], tanh_c[t]);
-    o[t].add(tanh_c[t], h[t + 1]); 
+    o[t].multiplyelementwise(tanh_c[t], h[t + 1]); 
     GPUMatrix output = this->output_weights.multiply(h[t+1]);
     output.add(output_bias, output);
     hidden_outputs.push_back(output);
@@ -495,13 +495,14 @@ std::vector<GPUMatrix> LstmLayer::backward(std::vector<GPUMatrix> upstream, std:
   GPUMatrix gradient_input_bias_o(this->input_bias_o.getSize(), 0);
 
   GPUMatrix gradient_output_bias(this->output_bias.getSize(), 0);
+  GPUMatrix gradient_output_weights(this->output_weights.getSize(), 0);
 
   // Calculate gradient connected with last timestep output weights
-  GPUMatrix gradient_output_weights = upstream.back().multiply(this->h[this->timesteps].transpose());
-  if( gradient_output_weights.getSize().height != this->output_weights.getSize().height ||
-      gradient_output_weights.getSize().width != this->output_weights.getSize().width) {
-        throw new InvalidMatrixSize("Gradient connected with output weights has wrong size");
-      }
+  // GPUMatrix gradient_output_weights = upstream.back().multiply(this->h[this->timesteps].transpose());
+  // if( gradient_output_weights.getSize().height != this->output_weights.getSize().height ||
+  //     gradient_output_weights.getSize().width != this->output_weights.getSize().width) {
+  //       throw new InvalidMatrixSize("Gradient connected with output weights has wrong size");
+  //     }
 
   // Calculate gradient connected with last timestep h
   GPUMatrix gradient_upstream_h = this->output_weights.transpose().multiply(upstream.back());
@@ -521,7 +522,7 @@ std::vector<GPUMatrix> LstmLayer::backward(std::vector<GPUMatrix> upstream, std:
     }
 
     gradient_output_bias.add(upstream[t], gradient_output_bias);
-    gradient_output_weights.add(upstream[t].multiply(this->h[t].transpose()), gradient_output_weights);
+    gradient_output_weights.add(upstream[t].multiply(this->h[t+1].transpose()), gradient_output_weights);
     GPUMatrix input = batch[t];
 
     //Calculate tanh derivative 1 - tanh^2(c)
@@ -656,4 +657,11 @@ void LstmLayer::saveWeights(std::fstream &output) {
 
   this->output_bias.toCPU().serialize(output);
 
+}
+
+void LstmLayer::showWeights() {
+  std::cout << "Showing input f weights:\n ";
+  this->input_weights_f.show(std::cout);
+  std::cout << "Showing state f weights:\n ";
+  this->state_weights_f.show(std::cout);
 }

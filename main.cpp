@@ -54,10 +54,10 @@ int main() {
   int input_size = dl.getOneHot().getCharacterAmount();
   int state_size = 128;
   int timesteps = 20;
-  float learning_rate = 0.1;
-  int epochs = 10000;
-  int batchsize = 2;
-  int log_rate = 5;
+  float learning_rate = 0.01;
+  int epochs = 1000;
+  int batchsize = 10;
+  int log_rate = 50;
 
   std::string name = "LSTM_epochs_"; 
   name += std::to_string(epochs);
@@ -77,16 +77,16 @@ int main() {
   Recurrent rnn(input_size, state_size, timesteps,-1,1, learning_rate);
   // Recurrent rnn(input_size, state_size, timesteps, learning_rate, name);
 
-  // std::vector<float> loss = rnn.train(epochs, batchsize, dl, log_rate);
-  // rnn.generateText(100, dl, std::cout);
-  // float sum = 0;
-  // for (auto i:loss) {
-  //   sum += i;
-  // }
-  // std::cout << "Mean loss: " << sum / loss.size() << std::endl;
+  std::vector<float> loss = rnn.train(epochs, batchsize, dl, log_rate);
+  rnn.generateText(100, dl, std::cout);
+  float sum = 0;
+  for (auto i:loss) {
+    sum += i;
+  }
+  std::cout << "Mean loss: " << sum / loss.size() << std::endl;
 
-  // Recurrent::saveLoss(loss, name+"_loss");
-  // rnn.saveModel(name);
+  Recurrent::saveLoss(loss, name+"_loss");
+  rnn.saveModel(name);
 
   // std::ofstream outfile("fakedata.txt");
   // // outfile.open("fakedata.txt", std::ios::binary);

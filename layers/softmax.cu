@@ -19,7 +19,7 @@ __global__ void dsoftmaxforward(const MatrixValType *input, MatrixValType *resul
     MatrixValType value = exp(input[i]);
     atomicAdd(sum, value);
     __syncthreads();
-    result[i] = exp(input[i]) / *sum;
+    result[i] = (exp(input[i]) + 0.001) / (*sum + inputsize.total * 0.001);
   }
 }
 

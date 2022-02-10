@@ -34,7 +34,7 @@ std::vector<float> Recurrent::train(int epochs, DataLoader &dl, int log) {
 
   for(int epoch = 0; epoch < epochs; epoch++) {
     // get training batch and separate the label
-    std::vector<GPUMatrix> batch = dl.getTrainBatch(this->timesteps+1);
+    std::vector<GPUMatrix> batch = dl.getTrainSequence(this->timesteps+1, 1);
     GPUMatrix label = batch.back();
     batch.pop_back();  
 
@@ -86,17 +86,19 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
     MatrixValType batch_loss = 0;
     for(int b = 0; b < batchsize; b++) {
       // get training batch and separate the label
-      std::vector<GPUMatrix> batch = dl.getTrainBatch(this->timesteps+1);
+      std::vector<GPUMatrix> batch = dl.getTrainSequence(this->timesteps+1, 1);
       GPUMatrix label = batch.back();
       batch.pop_back();  
   
       std::vector<GPUMatrix> lstm_output = this->lstmlayer1.forward(batch, 1);
       // std::cout << "lstm forward done\n";
       std::vector<GPUMatrix> softmax_output = this->softmax1.forward(lstm_output, 1);
-      // std::cout << "softmax forward done\n";
+      // std::cout << "Probabilities: \n";
+      // softmax_output[0].show(std::cout);
 
       std::vector<MatrixValType> cceloss_output = this->cceloss1.forward(softmax_output, label, batch);
       // std::cout << "loss forward done\n";
+      // std::cout << "Loss: \n" << cceloss_output[0] << std::endl;
   
       for(auto &i:cceloss_output) {
         batch_loss += i; 
@@ -122,6 +124,7 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
       // std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
       // gradients.push_back(lstm_gradient);
     }
+    // this->lstmlayer1.showWeights();
     for(const auto &i:gradients) {
       gradient_input_f.add(i[0], gradient_input_f);
       gradient_input_g.add(i[1], gradient_input_g);
@@ -143,24 +146,25 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
       gradient_output_bias.add(i[13], gradient_output_bias);
 
     }
-    gradient_input_f.multiply(1/batchsize, gradient_input_f);
-    gradient_input_g.multiply(1/batchsize, gradient_input_g);
-    gradient_input_i.multiply(1/batchsize, gradient_input_i);
-    gradient_input_o.multiply(1/batchsize, gradient_input_o);
+    MatrixValType scalar = 1.f/(float)batchsize;
+    gradient_input_f.multiply(scalar, gradient_input_f);
+    gradient_input_g.multiply(scalar, gradient_input_g);
+    gradient_input_i.multiply(scalar, gradient_input_i);
+    gradient_input_o.multiply(scalar, gradient_input_o);
   
-    gradient_state_f.multiply(1/batchsize, gradient_state_f);
-    gradient_state_g.multiply(1/batchsize, gradient_state_g);
-    gradient_state_i.multiply(1/batchsize, gradient_state_i);
-    gradient_state_o.multiply(1/batchsize, gradient_state_o);
+    gradient_state_f.multiply(scalar, gradient_state_f);
+    gradient_state_g.multiply(scalar, gradient_state_g);
+    gradient_state_i.multiply(scalar, gradient_state_i);
+    gradient_state_o.multiply(scalar, gradient_state_o);
   
-    gradient_output_weights.multiply(1/batchsize, gradient_output_weights);
+    gradient_output_weights.multiply(scalar, gradient_output_weights);
   
-    gradient_input_bias_f.multiply(1/batchsize, gradient_input_bias_f);
-    gradient_input_bias_g.multiply(1/batchsize, gradient_input_bias_g);
-    gradient_input_bias_i.multiply(1/batchsize, gradient_input_bias_i);
-    gradient_input_bias_o.multiply(1/batchsize, gradient_input_bias_o);
+    gradient_input_bias_f.multiply(scalar, gradient_input_bias_f);
+    gradient_input_bias_g.multiply(scalar, gradient_input_bias_g);
+    gradient_input_bias_i.multiply(scalar, gradient_input_bias_i);
+    gradient_input_bias_o.multiply(scalar, gradient_input_bias_o);
   
-    gradient_output_bias.multiply(1/batchsize, gradient_output_bias);
+    gradient_output_bias.multiply(scalar, gradient_output_bias);
     std::vector<GPUMatrix> mean_gradients;
     mean_gradients.push_back(gradient_input_f);
     mean_gradients.push_back(gradient_input_g);
@@ -182,6 +186,11 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
 
     std::vector<GPUMatrix> optimizer_output = sgd.calculateUpdate(mean_gradients);
     lstmlayer1.updateWeights(optimizer_output);
+    // std::cout << "Showing updated weights: \n";
+    // this->lstmlayer1.showWeights();
+    // std::cout << "Showing gradient: \n";
+    // gradient_input_f.show(std::cout);
+
     
     auto batch_end = std::chrono::high_resolution_clock::now();
     loss.push_back(batch_loss / batchsize);
@@ -215,7 +224,7 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
 
 void Recurrent::generateText(int generated_text_length, DataLoader &dl, std::ostream &stream) {
   // Show text given to the network as input
-  std::vector<GPUMatrix> start = dl.getTrainBatch(this->timesteps);
+  std::vector<GPUMatrix> start = dl.getTrainSequence(this->timesteps, 1);
   for( auto i:start) {
       stream << dl.getOneHot().decode(i.toCPU());
   }
