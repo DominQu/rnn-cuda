@@ -269,7 +269,7 @@ Matrix LstmLayer::forward(std::vector<GPUMatrix> batch) {
     GPUMatrix i_x_g = i[t].multiplyelementwise(g[t]);
     c[t + 1].add(i_x_g, c[t + 1]);
     applyTanh(c[t + 1], tanh_c[t]);
-    o[t].add(tanh_c[t], h[t + 1]); 
+    o[t].multiplyelementwise(tanh_c[t], h[t + 1]); 
 
   }
 
