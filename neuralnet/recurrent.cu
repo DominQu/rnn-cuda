@@ -1,14 +1,9 @@
 #include "recurrent.hpp"
-#include "layers/lstmlayer.hpp"
-#include "layers/CCEloss.hpp"
-#include "layers/softmax.hpp"
-#include "optimizer/sgd.hpp"
-#include "loader/loader.hpp"
-#include "linalg/GPUMatrix.hpp"
 
 Recurrent::Recurrent(int input_size, int state_size, 
                      int timesteps, float random_weights_low, 
-                     float random_weights_high, float learning_rate, float beta, float epsilon) 
+                     float random_weights_high, float learning_rate, 
+                     float beta, float epsilon) 
                      : input_size(input_size),
                        state_size(state_size),
                        timesteps(timesteps),
@@ -17,8 +12,7 @@ Recurrent::Recurrent(int input_size, int state_size,
                        softmax1({input_size}), 
                        cceloss1({}), 
                        sgd({learning_rate}),
-                       rms({learning_rate, beta, input_size, state_size, epsilon}) { }
-
+                       rms({learning_rate, beta, input_size, state_size, epsilon}){ }
 Recurrent::Recurrent(int input_size, int state_size, 
                      int timesteps, float learning_rate, float beta, float epsilon, std::string filepath) 
                      : input_size(input_size),
@@ -54,7 +48,7 @@ std::vector<float> Recurrent::train(int epochs, DataLoader &dl, int log) {
 
     GPUMatrix cceloss_gradient = cceloss1.backward(softmax_output, label);
     std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
-    std::vector<GPUMatrix> optimizer_output = sgd.calculateUpdate(lstm_gradient);
+    std::vector<GPUMatrix> optimizer_output = rms.calculateUpdate(lstm_gradient);
     lstmlayer1.updateWeights(optimizer_output);
   }
   return loss;
@@ -93,40 +87,17 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
       batch.pop_back();  
   
       std::vector<GPUMatrix> lstm_output = this->lstmlayer1.forward(batch, 1);
-      // std::cout << "lstm forward done\n";
       std::vector<GPUMatrix> softmax_output = this->softmax1.forward(lstm_output, 1);
-      // std::cout << "Probabilities: \n";
-      // softmax_output[0].show(std::cout);
-
       std::vector<MatrixValType> cceloss_output = this->cceloss1.forward(softmax_output, label, batch);
-      // std::cout << "loss forward done\n";
-      // std::cout << "Loss: \n" << cceloss_output[0] << std::endl;
-  
       for(auto &i:cceloss_output) {
         batch_loss += i; 
       }
   
       std::vector<GPUMatrix> cceloss_gradient = cceloss1.backward(softmax_output, label, batch);
-      // std::cout << "loss gradient done\n";
-
       std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
-      // std::cout << "lstm gradient done\n";
 
       gradients.push_back(lstm_gradient);
-
-      //Old way 
-      // GPUMatrix lstm_output = this->lstmlayer1.forward(batch);
-      // GPUMatrix softmax_output = this->softmax1.forward(lstm_output);
-      // MatrixValType cceloss_output = this->cceloss1.forward(softmax_output, label);
-  
-      // batch_loss += cceloss_output; 
-  
-  
-      // GPUMatrix cceloss_gradient = cceloss1.backward(softmax_output, label);
-      // std::vector<GPUMatrix> lstm_gradient = lstmlayer1.backward(cceloss_gradient, batch);
-      // gradients.push_back(lstm_gradient);
     }
-    // this->lstmlayer1.showWeights();
     for(const auto &i:gradients) {
       gradient_input_f.add(i[0], gradient_input_f);
       gradient_input_g.add(i[1], gradient_input_g);
@@ -188,12 +159,6 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
 
     std::vector<GPUMatrix> optimizer_output = rms.calculateUpdate(mean_gradients);
     lstmlayer1.updateWeights(optimizer_output);
-
-    // std::cout << "Showing updated weights: \n";
-    // this->lstmlayer1.showWeights();
-    // std::cout << "Showing gradient: \n";
-    // optimizer_output[0].show(std::cout);
-
     
     auto batch_end = std::chrono::high_resolution_clock::now();
     loss.push_back(batch_loss / (batchsize * this->timesteps));
@@ -224,13 +189,45 @@ std::vector<float> Recurrent::train(int epochs, int batchsize, DataLoader &dl, i
   return loss;
 }
 
+float Recurrent::test( DataLoader &dl) {
+  std::vector<GPUMatrix> start = dl.getTestBatch();
+  std::vector<GPUMatrix> batch;
+  int tests = start.size() - (this->timesteps + 1);
+  if( tests > 100) {
+    tests = 100;
+  }
+  int correct = 0;
+
+  for(int t = 0;t < tests; t++) {
+    batch = std::vector<GPUMatrix>(start.begin() + t, start.begin() + this->timesteps + t);
+    GPUMatrix label = start[this->timesteps + t + 1];
+
+    GPUMatrix lstm_output = lstmlayer1.forward(start);  
+    GPUMatrix softmax_output = softmax1.forward(lstm_output);
+    CPUMatrix probabilities = softmax_output.toCPU();
+
+    int pred_argmax = probabilities.argmax();
+    int real_argmax = label.toCPU().argmax();
+    if(pred_argmax == real_argmax) {
+      correct += 1;
+    }
+
+  }
+
+  float accuracy = correct / tests;
+
+  std::cout << "Test accuracy: " << accuracy << std::endl;
+  return accuracy;
+
+}
 
 void Recurrent::generateText(int generated_text_length, DataLoader &dl, std::ostream &stream) {
   // Show text given to the network as input
-  std::vector<GPUMatrix> start = dl.getTrainSequence(this->timesteps, 1);
+  std::vector<GPUMatrix> start = dl.getTrainBatch(this->timesteps);
   for( auto i:start) {
       stream << dl.getOneHot().decode(i.toCPU());
   }
+  stream << "\n --------\n";
   // Generate text of given length
   for( int letter = 0; letter < generated_text_length; letter++) {
 

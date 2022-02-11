@@ -26,10 +26,11 @@ std::vector<GPUMatrix> RMSprop::calculateUpdate(std::vector<GPUMatrix> &gradient
   std::vector<GPUMatrix> result;
   for(int i = 0 ; i < this->gradient_num; i++) {
     square_gradients[i].multiply(this->beta, square_gradients[i]);
-    square_gradients[i].add(gradients[i].multiplyelementwise(gradients[i]).multiply(1-this->beta), square_gradients[i]);
-    result.push_back(gradients[i].divideelementwise(square_gradients[i].sqrt().add(this->epsilon)).multiply(this->learning_rate));
-    // result[i].show(std::cout);
-    // square_gradients[i].sqrt().show(std::cout);
+    square_gradients[i].add(
+      gradients[i].multiplyelementwise(gradients[i]).multiply(1-this->beta), 
+      square_gradients[i]);
+    result.push_back(
+      gradients[i].divideelementwise(square_gradients[i].sqrt().add(this->epsilon)).multiply(this->learning_rate));
   }  
   return result;
 }

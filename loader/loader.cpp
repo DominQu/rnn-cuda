@@ -138,12 +138,12 @@ std::vector<GPUMatrix> DataLoader::getTestBatch() {
   this->inputFile.seekg(index);
 
   // Back up for paragraph to start
-  for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
-  // When found the newline, skip it
-  if (this->inputFile.peek() == '\n') this->inputFile.get();
+  // for (char c = ' '; this->inputFile.peek() != '\n' && this->inputFile.tellg() != 0; this->inputFile.unget()) { }
+  // // When found the newline, skip it
+  // if (this->inputFile.peek() == '\n') this->inputFile.get();
 
   // Load data into batch
-  while (true) {
+  for(int i = 0; i < 1000; i++) {
     char c = this->inputFile.get();
     if (this->inputFile.eof()) break;
     result.emplace_back(GPUMatrix::from(oh.encode(c)));
